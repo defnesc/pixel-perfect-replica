@@ -20,7 +20,7 @@ export function Header() {
   const navCls = "tap flex items-center label-xs border-b-2 border-transparent";
   const active = { className: "!border-primary text-primary" };
   return (
-    <header className="sticky top-0 z-40 border-b border-foreground bg-background">
+    <header className="sticky top-0 z-40 border-b border-border bg-background">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4">
         <Link to="/$lang" params={{ lang }} className="font-display text-xl">333</Link>
         <nav className="flex items-center gap-3 sm:gap-8">
@@ -48,7 +48,7 @@ export function Footer() {
   const t = useT();
   const { data } = useSuspenseQuery(sheetQuery);
   return (
-    <footer className="mt-20 border-t border-foreground">
+    <footer className="mt-20 border-t border-border">
       <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:grid-cols-3">
         <div>
           <div className="font-display text-4xl">333 GRILLZ</div>

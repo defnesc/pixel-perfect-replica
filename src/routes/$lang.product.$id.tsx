@@ -102,14 +102,14 @@ function ProductPage() {
         </div>
         {product.image_urls.length > 1 && (
           <div className="mt-2 flex justify-center gap-1.5">
-            {product.image_urls.map((_, i) => <span key={i} className={`h-1.5 w-6 ${i === img ? "bg-primary" : "bg-foreground/20"}`} />)}
+            {product.image_urls.map((_, i) => <span key={i} className={`h-1.5 w-6 rounded-full ${i === img ? "bg-primary" : "bg-foreground/20"}`} />)}
           </div>
         )}
       </div>
 
       <div className="px-4 md:px-0">
         <Link to="/$lang" params={{ lang }} className="tap inline-flex items-center helper">{t("product.back")}</Link>
-        <h1 className="text-5xl">{name}</h1>
+        <h1 className="h1-xl">{name}</h1>
         <p className="helper mt-2">{lang === "tr" ? product.description_tr : product.description_en}</p>
         <p className="mt-4 text-xl font-semibold">{priceText}</p>
         <p className="helper mb-6">{t("product.estimated")}{row?.pricing_mode === "per_tooth" ? ` · ${t("product.perTooth")}` : ""}</p>
@@ -126,7 +126,7 @@ function ProductPage() {
           <p className="helper mb-3">{t("q2.note")}</p>
           <div className="grid grid-cols-3 gap-2">
             {data.settings.metal_colors.map((c) => (
-              <button key={c} type="button" onClick={() => setColor(c)} aria-pressed={color === c} className={`tap border px-2 label-xs ${color === c ? "border-primary text-primary" : "border-foreground/25"}`}>
+              <button key={c} type="button" onClick={() => setColor(c)} aria-pressed={color === c} className={`pill ${color === c ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
                 {t(`color.${c}`)}
               </button>
             ))}
@@ -179,13 +179,13 @@ function ProductPage() {
         <div className="mt-10"><Faq /></div>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-foreground bg-background p-3">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background p-3">
         <div className="mx-auto flex max-w-6xl items-center gap-3">
           <div className="hidden sm:block">
             <div className="text-sm font-semibold">{priceText}</div>
             <div className="helper">{t("product.estimated")}</div>
           </div>
-          <button type="button" onClick={create} aria-disabled={!ready} className={`tap flex-1 px-4 font-display text-xl ${ready ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
+          <button type="button" onClick={create} aria-disabled={!ready} className={`btn flex-1 ${ready ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
             {t("cta.create")}
           </button>
         </div>
@@ -230,17 +230,17 @@ function OrderPanel(p: { lang: Lang; onClose: () => void; id: string; product: s
           <span className="label-xs">#{p.id}</span>
           <button type="button" onClick={p.onClose} className="tap px-2 label-xs">{t("panel.close")} ×</button>
         </div>
-        <h1 className="mt-4 text-5xl">{t("panel.title")}</h1>
+        <h1 className="mt-4 h1-xl">{t("panel.title")}</h1>
 
-        <h2 className="mt-8 border-b border-foreground pb-2 text-lg">{t("panel.summary")}</h2>
-        <dl className="divide-y divide-foreground/15 text-sm">
+        <h2 className="mt-8 pb-2 text-lg">{t("panel.summary")}</h2>
+        <dl className="divide-y divide-border text-sm">
           {[["panel.product", p.product], ["panel.metal", p.metal], ["panel.color", p.color], ["panel.teeth", p.teeth.join(", ")], ["panel.price", p.price]].map(([k, v]) => (
             <div key={k as string} className="flex justify-between gap-4 py-2"><dt className="helper">{t(k as string)}</dt><dd className="text-right font-medium">{v}</dd></div>
           ))}
         </dl>
         <p className="helper mt-2">{t("panel.priceNote")}</p>
 
-        <h2 className="mt-8 border-b border-foreground pb-2 text-lg">{t("panel.roadmap")}</h2>
+        <h2 className="mt-8 pb-2 text-lg">{t("panel.roadmap")}</h2>
         <ol className="mt-4">
           {steps.map((s, i) => (
             <li key={i} className="relative flex gap-4 pb-6 last:pb-0">

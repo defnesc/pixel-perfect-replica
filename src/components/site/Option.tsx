@@ -22,7 +22,7 @@ export function Option({ selected, onSelect, label, note, type = "radio" }: { se
 
 export function Question({ id, title, children, highlight }: { id: string; title: string; children: ReactNode; highlight?: boolean }) {
   return (
-    <section id={id} className={`scroll-mt-20 border-t border-foreground py-6 ${highlight ? "outline outline-2 outline-offset-4 outline-primary" : ""}`}>
+    <section id={id} className={`scroll-mt-20 border-t border-border py-6 ${highlight ? "outline outline-2 outline-offset-4 outline-primary" : ""}`}>
       <h2 className="mb-3 text-2xl">{title}</h2>
       {children}
     </section>

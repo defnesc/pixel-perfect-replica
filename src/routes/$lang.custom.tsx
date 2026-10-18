@@ -36,10 +36,10 @@ function CustomPage() {
 
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="text-6xl">{t("custom.title")}</h1>
+      <h1 className="h1-xl">{t("custom.title")}</h1>
       <p className="mt-4 max-w-2xl text-sm leading-relaxed">{t("custom.intro")}</p>
 
-      <h2 className="mt-12 border-b border-foreground pb-2 text-2xl">{t("custom.base")}</h2>
+      <h2 className="mt-12 pb-2 text-2xl">{t("custom.base")}</h2>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         {METALS.map((m) => {
           const r = data.customBase.find((x) => x.metal_type === m);
@@ -49,7 +49,7 @@ function CustomPage() {
           let line = t("price.ask");
           if (first !== null) line = extra !== null && extra !== first ? t("custom.silverLine", { first: fmt(first), extra: fmt(extra) }) : t("custom.perTooth", { price: fmt(first) });
           return (
-            <div key={m} className="border border-foreground p-5">
+            <div key={m} className="rounded-[20px] bg-surface p-5">
               <h3 className="text-2xl">{t(`metal.${m}`)}</h3>
               <p className="mt-3 text-sm">{line}</p>
               {note && <p className="helper mt-2">{note}</p>}
@@ -59,7 +59,7 @@ function CustomPage() {
       </div>
       <p className="helper mt-3">{t("custom.baseNote")}</p>
 
-      <h2 className="mt-12 border-b border-foreground pb-2 text-2xl">{t("custom.how")}</h2>
+      <h2 className="mt-12 pb-2 text-2xl">{t("custom.how")}</h2>
       <ol className="mt-4 grid gap-4 md:grid-cols-3">
         {["custom.step1", "custom.step2", "custom.step3"].map((k, i) => (
           <li key={k} className="flex gap-3 text-sm"><span className="font-display text-3xl text-primary">{i + 1}</span><span className="pt-2">{t(k)}</span></li>
@@ -67,11 +67,11 @@ function CustomPage() {
       </ol>
 
       <div className="mx-auto mt-12 max-w-xl">
-        <h2 className="border-b border-foreground pb-2 text-2xl">{t("custom.form")}</h2>
+        <h2 className="pb-2 text-2xl">{t("custom.form")}</h2>
         <p className="mt-4 text-sm font-semibold">{t("custom.material")}</p>
         <div className="mt-2 grid grid-cols-2 gap-2">
           {[...METALS, "unsure"].map((m) => (
-            <button key={m} type="button" aria-pressed={material === m} onClick={() => setMaterial(material === m ? "" : m)} className={`tap border px-2 label-xs ${material === m ? "border-primary text-primary" : "border-foreground/25"}`}>
+            <button key={m} type="button" aria-pressed={material === m} onClick={() => setMaterial(material === m ? "" : m)} className={`pill ${material === m ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
               {m === "unsure" ? t("custom.notSure") : t(`metal.${m}`)}
             </button>
           ))}
@@ -81,7 +81,7 @@ function CustomPage() {
         <div className={`mt-4 ${warn && !age ? "outline outline-2 outline-offset-2 outline-primary" : ""}`}>
           <Option type="check" selected={age} onSelect={() => { setAge(!age); setWarn(false); }} label={t("confirm.age")} />
         </div>
-        <a href="#" onClick={send} target="_blank" rel="noreferrer" className={`tap mt-6 flex w-full items-center justify-center gap-3 px-4 py-3 font-display text-xl ${age ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"}`}>
+        <a href="#" onClick={send} target="_blank" rel="noreferrer" className={`btn mt-6 w-full ${age ? "bg-success text-success-foreground" : "bg-muted text-muted-foreground"}`}>
           <WhatsAppIcon /> {t("custom.send")}
         </a>
         <p className="helper mt-2 text-center">{t("custom.photoNote")}</p>

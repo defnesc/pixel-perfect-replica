@@ -13,11 +13,11 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(null);
   const items = [...data.faq].sort((a, b) => a.sort_order - b.sort_order);
   return (
-    <ul className="border-t border-foreground">
+    <ul className="border-t border-border">
       {items.map((f, i) => {
         const isOpen = open === i;
         return (
-          <li key={i} className="border-b border-foreground">
+          <li key={i} className="border-b border-border">
             <button
               type="button"
               aria-expanded={isOpen}
