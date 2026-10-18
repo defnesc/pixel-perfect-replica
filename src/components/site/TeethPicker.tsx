@@ -10,7 +10,7 @@ export function TeethPicker({ value, onChange, max }: { value: number[]; onChang
   };
   return (
     <div>
-      <div className="relative mx-auto w-full max-w-sm border border-foreground" style={{ aspectRatio: String(TEETH_IMAGE_RATIO) }}>
+      <div className="relative mx-auto w-full max-w-sm rounded-[20px] bg-surface" style={{ aspectRatio: String(TEETH_IMAGE_RATIO) }}>
         {TEETH_IMAGE_URL ? (
           <img src={TEETH_IMAGE_URL} alt="" className="absolute inset-0 h-full w-full object-contain" />
         ) : (
@@ -31,7 +31,7 @@ export function TeethPicker({ value, onChange, max }: { value: number[]; onChang
               onClick={() => toggle(n)}
               style={{ left: `${p.x}%`, top: `${p.y}%` }}
               className={`absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border text-[11px] font-semibold ${
-                on ? "border-primary bg-primary text-primary-foreground" : "border-foreground bg-background"
+                on ? "border-primary bg-primary text-primary-foreground" : "border-foreground/40 bg-background"
               }`}
             >
               {n}
