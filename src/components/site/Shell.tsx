@@ -3,7 +3,6 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { LANG_STORAGE_KEY, useLang, useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
 import { waLink } from "@/lib/order";
-import { WhatsAppIcon } from "./WhatsAppIcon";
 
 export function Header() {
   const lang = useLang();
@@ -63,23 +62,5 @@ export function Footer() {
         <p className="helper self-end">{t("footer.legal")}</p>
       </div>
     </footer>
-  );
-}
-
-export function FloatingWhatsApp() {
-  const t = useT();
-  const loc = useLocation();
-  const { data } = useSuspenseQuery(sheetQuery);
-  if (/\/product\//.test(loc.pathname)) return null;
-  return (
-    <a
-      href={waLink(data.settings.whatsapp_number, "")}
-      target="_blank"
-      rel="noreferrer"
-      aria-label={t("wa.float")}
-      className="fixed bottom-4 right-4 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-success text-success-foreground"
-    >
-      <WhatsAppIcon className="h-7 w-7" />
-    </a>
   );
 }

@@ -2,7 +2,7 @@ import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
 import { isLang, LANG_STORAGE_KEY } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { FloatingWhatsApp, Footer, Header } from "@/components/site/Shell";
+import { Footer, Header } from "@/components/site/Shell";
 
 export const Route = createFileRoute("/$lang")({
   beforeLoad: ({ params }) => {
@@ -26,7 +26,6 @@ function LangLayout() {
       <Header />
       <Outlet />
       <Footer />
-      <FloatingWhatsApp />
     </div>
   );
 }
