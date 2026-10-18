@@ -74,9 +74,9 @@ function ProductPage() {
 
   const create = () => {
     if (!ready) {
-      const idx = answered.findIndex((a) => !a);
-      setFlag(QIDS[idx]);
-      document.getElementById(QIDS[idx])?.scrollIntoView({ behavior: "smooth", block: "start" });
+      const qid: string = QIDS[answered.findIndex((a) => !a)] ?? "q-metal";
+      setFlag(qid);
+      document.getElementById(qid)?.scrollIntoView({ behavior: "smooth", block: "start" });
       setTimeout(() => setFlag(null), 2000);
       return;
     }
