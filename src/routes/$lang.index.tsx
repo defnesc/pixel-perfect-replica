@@ -4,7 +4,7 @@ import { useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
 import { formatTry, lowestPrice } from "@/lib/pricing";
 import { seo } from "@/lib/seo";
-import intro from "@/assets/intro.jpg";
+import introAsset from "@/assets/hero-grillz.jpg.asset.json";
 
 export const Route = createFileRoute("/$lang/")({
   head: ({ params }) => seo(params.lang as Lang, "home"),
@@ -21,11 +21,10 @@ function Catalog() {
   return (
     <main>
       <section className="relative flex h-[calc(100svh-45px)] flex-col items-center justify-center overflow-hidden">
-        <img src={intro} alt="" width={1600} height={1008} className="animate-intro absolute inset-0 h-full w-full object-cover opacity-90" />
+        <img src={introAsset.url} alt="" width={1536} height={1755} className="animate-intro absolute inset-0 h-full w-full object-cover opacity-90" />
         <div className="relative overflow-hidden px-4 text-center">
-          <h1 className="animate-intro text-[22vw] leading-[0.9] sm:text-[12rem]">333</h1>
+          <h1 className="text-[22vw] leading-[0.9] sm:text-[12rem]">333</h1>
           <p className="label-xs mt-2">{t("intro.tagline")}</p>
-          <span className="animate-shine pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-background/50" />
         </div>
         <button type="button" onClick={goDown} className="tap absolute bottom-8 flex flex-col items-center gap-1 label-xs">
           {t("intro.scroll")}
