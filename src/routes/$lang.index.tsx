@@ -22,7 +22,10 @@ function Catalog() {
     <main>
       <section className="relative flex h-[calc(100svh-45px)] flex-col items-center justify-center overflow-hidden">
         <img src={introAsset.url} alt="" width={1536} height={1755} className="animate-intro absolute inset-0 h-full w-full object-cover opacity-90" />
-        <img src={introAsset.url} alt="" aria-hidden width={1536} height={1755} className="blur-veil pointer-events-none absolute inset-0 h-full w-full scale-[1.08] object-cover opacity-90" />
+        <div className="blur-veil pointer-events-none absolute inset-0 scale-[1.08] overflow-hidden">
+          <img src={introAsset.url} alt="" aria-hidden width={1536} height={1755} className="absolute inset-0 h-full w-full object-cover opacity-90 blur-[16px]" />
+          <div className="absolute inset-0 bg-primary/45" />
+        </div>
         <div className="relative overflow-hidden px-4 text-center">
           <h1 className="text-[22vw] leading-[0.9] sm:text-[12rem]">333</h1>
           <p className="label-xs mt-2">{t("intro.tagline")}</p>

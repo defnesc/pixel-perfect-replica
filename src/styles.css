@@ -159,23 +159,23 @@
 @utility animate-shine { animation: shine 3.2s ease-in-out 0.8s infinite; }
 @utility animate-bob { animation: bob 1.6s ease-in-out infinite; }
 
-/* Blurred copy of a photo, masked so the blur is strong at the top and
-   bottom edges and melts away toward the middle where the photo stays sharp. */
+/* Mask for a blurred, accent-tinted copy of a photo: the soft zone covers a
+   wide band at the top and bottom and clears toward the middle, where the
+   photo stays sharp. */
 @utility blur-veil {
-  filter: blur(16px) saturate(1.05);
   -webkit-mask-image: linear-gradient(to bottom,
     rgb(0 0 0 / 1) 0%,
-    rgb(0 0 0 / .92) 10%,
-    rgb(0 0 0 / 0) 36%,
-    rgb(0 0 0 / 0) 64%,
-    rgb(0 0 0 / .92) 90%,
+    rgb(0 0 0 / .96) 22%,
+    rgb(0 0 0 / 0) 42%,
+    rgb(0 0 0 / 0) 60%,
+    rgb(0 0 0 / .96) 80%,
     rgb(0 0 0 / 1) 100%);
   mask-image: linear-gradient(to bottom,
     rgb(0 0 0 / 1) 0%,
-    rgb(0 0 0 / .92) 10%,
-    rgb(0 0 0 / 0) 36%,
-    rgb(0 0 0 / 0) 64%,
-    rgb(0 0 0 / .92) 90%,
+    rgb(0 0 0 / .96) 22%,
+    rgb(0 0 0 / 0) 42%,
+    rgb(0 0 0 / 0) 60%,
+    rgb(0 0 0 / .96) 80%,
     rgb(0 0 0 / 1) 100%);
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
