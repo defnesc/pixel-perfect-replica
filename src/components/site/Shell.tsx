@@ -1,8 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { LANG_STORAGE_KEY, useLang, useT, type Lang } from "@/i18n";
-import { sheetQuery } from "@/lib/sheet";
-import { waLink } from "@/lib/order";
 
 export function Header() {
   const lang = useLang();
@@ -46,7 +43,6 @@ export function Header() {
 export function Footer() {
   const lang = useLang();
   const t = useT();
-  const { data } = useSuspenseQuery(sheetQuery);
   return (
     <footer className="mt-24">
       <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 pb-12 pt-14 text-center">
