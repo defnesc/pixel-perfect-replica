@@ -45,13 +45,13 @@ export function Footer() {
   const t = useT();
   return (
     <footer className="mt-24">
-      <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 pb-12 pt-14 text-center">
+      <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 pb-12 pt-14 text-center text-[15px]">
         <div className="font-display text-[clamp(2rem,8.5vw,3.5rem)] leading-none whitespace-nowrap tracking-tight">333GRILLZ</div>
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[15px]">
+        <div className="flex flex-wrap items-center justify-center gap-x-6">
           <a className="tap" href="https://instagram.com/333grillz" target="_blank" rel="noreferrer">Instagram</a>
-          <Link className="tap" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
+          <span className="tap">{t("footer.location")}</span>
         </div>
-        <p className="helper">{t("footer.location")}</p>
+        <Link className="tap" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
       </div>
     </footer>
   );
