@@ -34,7 +34,6 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-logo: var(--logo);
 }
 
 :root {
@@ -62,8 +61,6 @@
   --border: oklch(0.95 0.015 80 / 0.22);
   --input: oklch(0.95 0.015 80 / 0.3);
   --ring: oklch(0.618 0.244 359.4);
-  /* #81ED14 */
-  --logo: oklch(0.847 0.242 134.8);
 }
 
 @layer base {
