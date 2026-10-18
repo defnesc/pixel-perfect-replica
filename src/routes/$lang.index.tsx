@@ -36,7 +36,6 @@ function Catalog() {
           {t("intro.scroll")}
           <span className="animate-bob text-lg" aria-hidden>↓</span>
         </button>
-        <button type="button" onClick={goDown} className="tap absolute right-4 top-4 helper underline">{t("intro.skip")}</button>
       </section>
 
       <section id="catalog" className="mx-auto max-w-[1200px] scroll-mt-20 px-4 pt-6">
