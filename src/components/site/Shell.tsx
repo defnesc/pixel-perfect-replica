@@ -56,7 +56,7 @@ export function Footer() {
         </div>
         <div className="flex flex-col gap-1 label-xs">
           <a className="tap flex items-center" href="https://instagram.com/333grillz" target="_blank" rel="noreferrer">Instagram</a>
-          <a className="tap flex items-center" href={waLink(data.settings.whatsapp_number, "")} target="_blank" rel="noreferrer">WhatsApp</a>
+          <a className="tap flex items-center" href={waLink(data.settings.whatsapp_number, "")} target="_blank" rel="noreferrer"></a>
           <Link className="tap flex items-center" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
         </div>
       </div>
