@@ -49,9 +49,9 @@ export function Footer() {
         <div className="font-display text-[clamp(2rem,8.5vw,3.5rem)] leading-none whitespace-nowrap tracking-tight">333GRILLZ</div>
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[15px]">
           <a className="tap" href="https://instagram.com/333grillz" target="_blank" rel="noreferrer">Instagram</a>
-          <Link className="tap" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
+          <span>{t("footer.location")}</span>
         </div>
-        <p className="helper">{t("footer.location")}</p>
+        <Link className="tap helper" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
       </div>
     </footer>
   );
