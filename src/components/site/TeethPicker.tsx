@@ -21,7 +21,7 @@ export function TeethPicker({ value, onChange, max }: { value: number[]; onChang
           </>
         )}
         {[...UPPER, ...LOWER].map((n) => {
-          const p = HOTSPOTS[n];
+          const p = HOTSPOTS[n] ?? { x: 50, y: 50 };
           const on = value.includes(n);
           return (
             <button

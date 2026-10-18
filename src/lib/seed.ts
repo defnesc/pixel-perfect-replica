@@ -46,7 +46,7 @@ export const SEED: SheetData = {
     ["Do you make grillz for people under 18?", "18 yaşından küçüklere yapılıyor mu?", "No. We only make grillz for people aged 18 and over.", "Hayır. Yalnızca 18 yaş ve üzerindeki kişilere grillz yapıyoruz."],
     ["Why is there an 18+ age limit?", "Neden 18 yaş sınırı var?", "An order is a sales contract and processing personal data needs valid consent, so we only serve people aged 18 and over.", "Sipariş bir satış sözleşmesidir ve kişisel verilerin işlenmesi için geçerli açık rıza gerekir; bu nedenle yalnızca 18 yaş ve üzerindeki kişilere hizmet veriyoruz."],
     ["What happens to my personal data?", "Kişisel verilerim ne oluyor?", "We use your order details and contact information only to prepare and deliver your order. They are kept in our order records and are never sold or shared for marketing. Details are in our Privacy Notice (KVKK).", "Sipariş bilgilerinizi ve iletişim bilgilerinizi yalnızca siparişinizi hazırlamak ve teslim etmek için kullanırız. Bu bilgiler sipariş kayıtlarımızda saklanır, satılmaz ve pazarlama amacıyla paylaşılmaz. Ayrıntılar KVKK Aydınlatma Metni'nde."],
-  ].map(([question_en, question_tr, answer_en, answer_tr], i) => ({ question_en, question_tr, answer_en, answer_tr, sort_order: i + 1 })),
+  ].map(([question_en = "", question_tr = "", answer_en = "", answer_tr = ""], i) => ({ question_en, question_tr, answer_en, answer_tr, sort_order: i + 1 })),
   settings: {
     whatsapp_number: "905000000000",
     scan_email: "scan@333grillz.com",

@@ -21,7 +21,7 @@ export interface SheetData { products: Product[]; prices: PriceRow[]; customBase
  * Set VITE_PRICE_SHEET_ID to the ID of the Price Sheet (File → Share → "Anyone with the link: Viewer").
  * Without it the site uses the built-in seed data.
  */
-const SHEET_ID = import.meta.env.VITE_PRICE_SHEET_ID as string | undefined;
+const SHEET_ID = import.meta.env["VITE_PRICE_SHEET_ID"] as string | undefined;
 
 export function parseCsv(text: string): Record<string, string>[] {
   const rows: string[][] = [];
@@ -46,20 +46,22 @@ export function parseCsv(text: string): Record<string, string>[] {
   return body.filter((r) => r.some((v) => v.trim())).map((r) => Object.fromEntries(keys.map((k, i) => [k, (r[i] ?? "").trim()])));
 }
 
-const num = (v: string) => (v === "" || v == null ? null : Number(v.replace(/[^\d.,-]/g, "").replace(",", ".")));
+const num = (v: string | undefined) => (v === "" || v == null ? null : Number(v.replace(/[^\d.,-]/g, "").replace(",", ".")));
 
-async function tab(name: string) {
+type Row = Record<"product_id"|"product_name_en"|"product_name_tr"|"description_en"|"description_tr"|"image_urls"|"teeth_count"|"active"|"sort_order"|"metal_type"|"price"|"currency"|"pricing_mode"|"first_tooth_price"|"extra_tooth_price"|"note_en"|"note_tr"|"question_en"|"question_tr"|"answer_en"|"answer_tr"|"whatsapp_number"|"scan_email"|"metal_colors"|"currency_symbol"|"usd_try", string>;
+
+async function tab(name: string): Promise<Row[]> {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Sheet tab ${name} failed [${res.status}]`);
-  return parseCsv(await res.text());
+  return parseCsv(await res.text()) as Row[];
 }
 
 async function loadSheet(): Promise<SheetData> {
   if (!SHEET_ID) return SEED;
   try {
-    const [p, pr, cb, f, s] = await Promise.all(["Products", "Prices", "Custom Base Prices", "FAQ", "Settings"].map(tab));
-    const st = s[0] ?? {};
+    const [p = [], pr = [], cb = [], f = [], s = []] = await Promise.all(["Products", "Prices", "Custom Base Prices", "FAQ", "Settings"].map(tab));
+    const st: Partial<Row> = s?.[0] ?? {};
     return {
       products: p.map((r) => ({
         product_id: r.product_id,
