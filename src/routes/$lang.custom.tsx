@@ -37,7 +37,7 @@ function CustomPage() {
   return (
     <main className="mx-auto max-w-5xl px-4 py-10">
       <h1 className="h1-xl">{t("custom.title")}</h1>
-      <p className="mt-4 max-w-2xl text-sm leading-relaxed">{t("custom.intro")}</p>
+      <p className="mt-4 max-w-[45ch] leading-normal text-helper">{t("custom.intro")}</p>
 
       <h2 className="mt-12 pb-2 text-2xl">{t("custom.base")}</h2>
       <div className="mt-4 grid gap-3 md:grid-cols-3">
@@ -77,7 +77,7 @@ function CustomPage() {
           ))}
         </div>
         <label className="mt-5 block text-sm font-semibold" htmlFor="idea">{t("custom.idea")}</label>
-        <textarea id="idea" value={idea} onChange={(e) => setIdea(e.target.value)} maxLength={500} rows={4} placeholder={t("custom.placeholder")} className="mt-2 w-full border border-foreground/25 bg-background p-3 text-base focus:border-primary focus:outline-none" />
+        <textarea id="idea" value={idea} onChange={(e) => setIdea(e.target.value)} maxLength={500} rows={4} placeholder={t("custom.placeholder")} className="mt-2 w-full rounded-[20px] border border-foreground/20 bg-surface p-4 text-base focus:border-primary focus:outline-none" />
         <div className={`mt-4 ${warn && !age ? "outline outline-2 outline-offset-2 outline-primary" : ""}`}>
           <Option type="check" selected={age} onSelect={() => { setAge(!age); setWarn(false); }} label={t("confirm.age")} />
         </div>

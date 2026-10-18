@@ -17,11 +17,11 @@ export function Header() {
     else rest = rest.replace(/^\/gizlilik/, "/privacy");
     navigate({ to: `/${l}${rest}` as "/" });
   };
-  const navCls = "tap flex items-center label-xs border-b-2 border-transparent";
-  const active = { className: "!border-primary text-primary" };
+  const navCls = "tap flex items-center label-xs text-[11px] sm:text-xs";
+  const active = { className: "text-primary" };
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background">
-      <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4">
+    <header className="sticky top-2 z-40 px-2">
+      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-2 rounded-full border border-border bg-background/60 pl-5 pr-2 backdrop-blur-md">
         <Link to="/$lang" params={{ lang }} className="font-display text-xl">333</Link>
         <nav className="flex items-center gap-3 sm:gap-8">
           <Link to="/$lang" params={{ lang }} activeOptions={{ exact: true }} className={navCls} activeProps={active}>{t("nav.catalog")}</Link>
@@ -31,8 +31,8 @@ export function Header() {
         <div className="flex items-center label-xs">
           {(["en", "tr"] as Lang[]).map((l, i) => (
             <span key={l} className="flex items-center">
-              {i > 0 && <span className="px-0.5">|</span>}
-              <button type="button" onClick={() => switchTo(l)} className={`tap px-1 ${l === lang ? "text-primary" : ""}`} aria-current={l === lang}>
+              
+              <button type="button" onClick={() => switchTo(l)} className={`h-8 min-w-8 rounded-full px-2 text-[11px] font-bold ${l === lang ? "bg-primary text-primary-foreground" : ""}`} aria-current={l === lang}>
                 {l.toUpperCase()}
               </button>
             </span>
@@ -48,13 +48,13 @@ export function Footer() {
   const t = useT();
   const { data } = useSuspenseQuery(sheetQuery);
   return (
-    <footer className="mt-20 border-t border-border">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:grid-cols-3">
+    <footer className="mt-24">
+      <div className="mx-auto grid max-w-[1200px] gap-6 px-4 pb-10 pt-14 sm:grid-cols-3">
         <div>
-          <div className="font-display text-4xl">333 GRILLZ</div>
+          <div className="font-display text-5xl">333<br />GRILLZ</div>
           <p className="helper mt-2">{t("footer.location")}</p>
         </div>
-        <div className="flex flex-col gap-1 label-xs">
+        <div className="flex flex-col text-[15px]">
           <a className="tap flex items-center" href="https://instagram.com/333grillz" target="_blank" rel="noreferrer">Instagram</a>
           <a className="tap flex items-center" href={waLink(data.settings.whatsapp_number, "")} target="_blank" rel="noreferrer"></a>
           <Link className="tap flex items-center" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
