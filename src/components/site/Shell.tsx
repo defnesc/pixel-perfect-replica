@@ -59,7 +59,6 @@ export function Footer() {
           <a className="tap flex items-center" href={waLink(data.settings.whatsapp_number, "")} target="_blank" rel="noreferrer">WhatsApp</a>
           <Link className="tap flex items-center" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
         </div>
-        <p className="helper self-end">{t("footer.legal")}</p>
       </div>
     </footer>
   );
