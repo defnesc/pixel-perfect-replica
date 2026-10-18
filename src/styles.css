@@ -184,6 +184,23 @@
   mask-repeat: no-repeat;
 }
 
+/* Feather the sharp photo's own top and bottom edges so it melts into the
+   blurred bands instead of ending in a visible cut line. */
+@utility photo-fade {
+  -webkit-mask-image: linear-gradient(to bottom,
+    rgb(0 0 0 / 0) 0%,
+    rgb(0 0 0 / 1) 17%,
+    rgb(0 0 0 / 1) 83%,
+    rgb(0 0 0 / 0) 100%);
+  mask-image: linear-gradient(to bottom,
+    rgb(0 0 0 / 0) 0%,
+    rgb(0 0 0 / 1) 17%,
+    rgb(0 0 0 / 1) 83%,
+    rgb(0 0 0 / 0) 100%);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
 /* Semi-transparent wash over the blurred bands: pink (#ED1481) at the outer
    edges, lime (#81ED14) toward the middle, so both colors show at top and
    bottom while the photo underneath still reads through. */
