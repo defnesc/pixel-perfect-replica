@@ -50,6 +50,7 @@ function Catalog() {
                     <div className="text-[15px] font-semibold normal-case tracking-normal">{lang === "tr" ? p.product_name_tr : p.product_name_en}</div>
                     <div className="mt-1 font-mono text-[13px] uppercase tracking-[0.04em]">{low === null ? t("price.ask") : t("catalog.from", { price: formatTry(low, lang, data.settings.currency_symbol) })}</div>
                   </div>
+                </div>
               </Link>
             );
           })}
