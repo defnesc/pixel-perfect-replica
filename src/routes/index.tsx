@@ -1,24 +1,31 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { LANG_STORAGE_KEY } from "@/i18n";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
-  component: Index,
+  head: () => ({
+    meta: [
+      { title: "333 Grillz — Custom Grillz Istanbul" },
+      { name: "description", content: "Custom gold and silver grillz in Bomonti, Istanbul. / İstanbul'da size özel grillz." },
+      { property: "og:title", content: "333 Grillz — Custom Grillz Istanbul" },
+      { property: "og:description", content: "Custom gold and silver grillz in Bomonti, Istanbul." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [
+      { rel: "alternate", hrefLang: "en", href: "/en" },
+      { rel: "alternate", hrefLang: "tr", href: "/tr" },
+    ],
+  }),
+  component: LangRedirect,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+function LangRedirect() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const saved = localStorage.getItem(LANG_STORAGE_KEY);
+    const lang = saved === "en" || saved === "tr" ? saved : navigator.language?.toLowerCase().startsWith("tr") ? "tr" : "en";
+    navigate({ to: "/$lang", params: { lang }, replace: true });
+  }, [navigate]);
+  return <div className="flex min-h-screen items-center justify-center font-display text-5xl">333</div>;
 }

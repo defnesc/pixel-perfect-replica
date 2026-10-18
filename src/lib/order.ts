@@ -36,7 +36,7 @@ export function quoteMessage(lang: Lang, id: string, material: string, idea: str
 
 /** POST to the CRM webhook (Google Apps Script / Make). Set VITE_CRM_WEBHOOK_URL. Fire-and-forget. */
 export function sendToCrm(row: Record<string, unknown>) {
-  const url = import.meta.env.VITE_CRM_WEBHOOK_URL as string | undefined;
+  const url = import.meta.env["VITE_CRM_WEBHOOK_URL"] as string | undefined;
   if (!url) return;
   const body = JSON.stringify({ created_at: new Date().toISOString(), ...row });
   fetch(url, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body }).catch((e) =>
