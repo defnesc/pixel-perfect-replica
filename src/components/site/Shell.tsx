@@ -1,8 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { LANG_STORAGE_KEY, useLang, useT, type Lang } from "@/i18n";
-import { sheetQuery } from "@/lib/sheet";
-import { waLink } from "@/lib/order";
 
 export function Header() {
   const lang = useLang();
@@ -46,19 +43,15 @@ export function Header() {
 export function Footer() {
   const lang = useLang();
   const t = useT();
-  const { data } = useSuspenseQuery(sheetQuery);
   return (
     <footer className="mt-24">
-      <div className="mx-auto grid max-w-[1200px] gap-6 px-4 pb-10 pt-14 sm:grid-cols-3">
-        <div>
-          <div className="font-display text-[clamp(2rem,8.5vw,3.5rem)] leading-none whitespace-nowrap tracking-tight">333GRILLZ</div>
-          <p className="helper mt-2">{t("footer.location")}</p>
+      <div className="mx-auto flex max-w-[1200px] flex-col items-center gap-5 px-4 pb-12 pt-14 text-center">
+        <div className="font-display text-[clamp(2rem,8.5vw,3.5rem)] leading-none whitespace-nowrap tracking-tight">333GRILLZ</div>
+        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[15px]">
+          <a className="tap" href="https://instagram.com/333grillz" target="_blank" rel="noreferrer">Instagram</a>
+          <Link className="tap" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
         </div>
-        <div className="flex flex-col text-[15px]">
-          <a className="tap flex items-center" href="https://instagram.com/333grillz" target="_blank" rel="noreferrer">Instagram</a>
-          <a className="tap flex items-center" href={waLink(data.settings.whatsapp_number, "")} target="_blank" rel="noreferrer"></a>
-          <Link className="tap flex items-center" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
-        </div>
+        <p className="helper">{t("footer.location")}</p>
       </div>
     </footer>
   );
