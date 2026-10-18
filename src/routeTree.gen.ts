@@ -12,9 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LangRouteImport } from './routes/$lang'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
+import { Route as LangCustomRouteImport } from './routes/$lang.custom'
 import { Route as LangFaqRouteImport } from './routes/$lang.faq'
 import { Route as LangGizlilikRouteImport } from './routes/$lang.gizlilik'
 import { Route as LangPrivacyRouteImport } from './routes/$lang.privacy'
+import { Route as LangProductIdRouteImport } from './routes/$lang.product.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -29,6 +31,11 @@ const LangRoute = LangRouteImport.update({
 const LangIndexRoute = LangIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangCustomRoute = LangCustomRouteImport.update({
+  id: '/custom',
+  path: '/custom',
   getParentRoute: () => LangRoute,
 } as any)
 const LangFaqRoute = LangFaqRouteImport.update({
@@ -46,50 +53,72 @@ const LangPrivacyRoute = LangPrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => LangRoute,
 } as any)
+const LangProductIdRoute = LangProductIdRouteImport.update({
+  id: '/product/$id',
+  path: '/product/$id',
+  getParentRoute: () => LangRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
+  '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/': typeof LangIndexRoute
+  '/$lang/product/$id': typeof LangProductIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang': typeof LangIndexRoute
+  '/$lang/product/$id': typeof LangProductIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
+  '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/': typeof LangIndexRoute
+  '/$lang/product/$id': typeof LangProductIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/$lang'
+    | '/$lang/custom'
     | '/$lang/faq'
     | '/$lang/gizlilik'
     | '/$lang/privacy'
     | '/$lang/'
+    | '/$lang/product/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/$lang/faq' | '/$lang/gizlilik' | '/$lang/privacy' | '/$lang'
+  to:
+    | '/'
+    | '/$lang/custom'
+    | '/$lang/faq'
+    | '/$lang/gizlilik'
+    | '/$lang/privacy'
+    | '/$lang'
+    | '/$lang/product/$id'
   id:
     | '__root__'
     | '/'
     | '/$lang'
+    | '/$lang/custom'
     | '/$lang/faq'
     | '/$lang/gizlilik'
     | '/$lang/privacy'
     | '/$lang/'
+    | '/$lang/product/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -120,6 +149,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangIndexRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/custom': {
+      id: '/$lang/custom'
+      path: '/custom'
+      fullPath: '/$lang/custom'
+      preLoaderRoute: typeof LangCustomRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/faq': {
       id: '/$lang/faq'
       path: '/faq'
@@ -141,21 +177,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangPrivacyRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/product/$id': {
+      id: '/$lang/product/$id'
+      path: '/product/$id'
+      fullPath: '/$lang/product/$id'
+      preLoaderRoute: typeof LangProductIdRouteImport
+      parentRoute: typeof LangRoute
+    }
   }
 }
 
 interface LangRouteChildren {
+  LangCustomRoute: typeof LangCustomRoute
   LangFaqRoute: typeof LangFaqRoute
   LangGizlilikRoute: typeof LangGizlilikRoute
   LangPrivacyRoute: typeof LangPrivacyRoute
   LangIndexRoute: typeof LangIndexRoute
+  LangProductIdRoute: typeof LangProductIdRoute
 }
 
 const LangRouteChildren: LangRouteChildren = {
+  LangCustomRoute: LangCustomRoute,
   LangFaqRoute: LangFaqRoute,
   LangGizlilikRoute: LangGizlilikRoute,
   LangPrivacyRoute: LangPrivacyRoute,
   LangIndexRoute: LangIndexRoute,
+  LangProductIdRoute: LangProductIdRoute,
 }
 
 const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
