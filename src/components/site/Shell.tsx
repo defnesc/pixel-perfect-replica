@@ -1,8 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { LANG_STORAGE_KEY, useLang, useT, type Lang } from "@/i18n";
-import { sheetQuery } from "@/lib/sheet";
-import { waLink } from "@/lib/order";
 
 export function Header() {
   const lang = useLang();
@@ -22,7 +19,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-foreground bg-background">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-4">
-        <Link to="/$lang" params={{ lang }} className="font-display text-xl">333</Link>
+        <Link to="/$lang" params={{ lang }} className="font-display text-xl text-logo">333</Link>
         <nav className="flex items-center gap-3 sm:gap-8">
           <Link to="/$lang" params={{ lang }} activeOptions={{ exact: true }} className={navCls} activeProps={active}>{t("nav.catalog")}</Link>
           <Link to="/$lang/custom" params={{ lang }} className={navCls} activeProps={active}>{t("nav.custom")}</Link>
@@ -46,17 +43,12 @@ export function Header() {
 export function Footer() {
   const lang = useLang();
   const t = useT();
-  const { data } = useSuspenseQuery(sheetQuery);
   return (
     <footer className="mt-20 border-t border-foreground">
-      <div className="mx-auto grid max-w-6xl gap-6 px-4 py-10 sm:grid-cols-3">
-        <div>
-          <div className="font-display text-4xl">333 GRILLZ</div>
-          <p className="helper mt-2">{t("footer.location")}</p>
-        </div>
-        <div className="flex flex-col gap-1 label-xs">
+      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:flex-row sm:items-center sm:justify-between">
+        <div className="font-display text-4xl text-logo">333 GRILLZ</div>
+        <div className="flex flex-col gap-1 label-xs sm:items-end">
           <a className="tap flex items-center" href="https://instagram.com/333grillz" target="_blank" rel="noreferrer">Instagram</a>
-          <a className="tap flex items-center" href={waLink(data.settings.whatsapp_number, "")} target="_blank" rel="noreferrer">WhatsApp</a>
           <Link className="tap flex items-center" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
         </div>
       </div>
