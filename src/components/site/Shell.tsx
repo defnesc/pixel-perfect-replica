@@ -51,7 +51,7 @@ export function Footer() {
           <a className="tap" href="https://instagram.com/333grillz" target="_blank" rel="noreferrer">Instagram</a>
           <span className="tap">{t("footer.location")}</span>
         </div>
-        <Link className="tap" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
+        <Link className="tap text-[12px] leading-[1.5] text-helper" to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }}>{t("footer.privacy")}</Link>
       </div>
     </footer>
   );
