@@ -235,7 +235,7 @@ function OrderPanel(p: { lang: Lang; onClose: () => void; id: string; product: s
         <h2 className="mt-8 border-b border-foreground pb-2 text-lg">{t("panel.summary")}</h2>
         <dl className="divide-y divide-foreground/15 text-sm">
           {[["panel.product", p.product], ["panel.metal", p.metal], ["panel.color", p.color], ["panel.teeth", p.teeth.join(", ")], ["panel.price", p.price]].map(([k, v]) => (
-            <div key={k} className="flex justify-between gap-4 py-2"><dt className="helper">{t(k)}</dt><dd className="text-right font-medium">{v}</dd></div>
+            <div key={k as string} className="flex justify-between gap-4 py-2"><dt className="helper">{t(k as string)}</dt><dd className="text-right font-medium">{v}</dd></div>
           ))}
         </dl>
         <p className="helper mt-2">{t("panel.priceNote")}</p>
