@@ -27,3 +27,21 @@ export function useT() {
 }
 
 export const LANG_STORAGE_KEY = "333-lang";
+
+// Storage can throw (blocked in embedded frames / private modes) — never let it break the page.
+export function readSavedLang(): Lang | null {
+  try {
+    const v = window.localStorage.getItem(LANG_STORAGE_KEY);
+    return isLang(v) ? v : null;
+  } catch {
+    return null;
+  }
+}
+
+export function saveLang(lang: Lang) {
+  try {
+    window.localStorage.setItem(LANG_STORAGE_KEY, lang);
+  } catch {
+    /* ignore */
+  }
+}

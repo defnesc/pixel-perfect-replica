@@ -1,5 +1,5 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
-import { LANG_STORAGE_KEY, useLang, useT, type Lang } from "@/i18n";
+import { saveLang, useLang, useT, type Lang } from "@/i18n";
 
 export function Header() {
   const lang = useLang();
@@ -8,7 +8,7 @@ export function Header() {
   const navigate = useNavigate();
   const switchTo = (l: Lang) => {
     if (l === lang) return;
-    localStorage.setItem(LANG_STORAGE_KEY, l);
+    saveLang(l);
     let rest = loc.pathname.replace(/^\/(en|tr)/, "");
     if (l === "tr") rest = rest.replace(/^\/privacy/, "/gizlilik");
     else rest = rest.replace(/^\/gizlilik/, "/privacy");
