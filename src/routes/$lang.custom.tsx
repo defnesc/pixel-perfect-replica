@@ -3,7 +3,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { formatTry, METALS, toTry } from "@/lib/pricing";
+import { METALS, toTry } from "@/lib/pricing";
+import { formatPrice, useCurrency } from "@/lib/currency";
 import { newOrderId, quoteMessage, sendToCrm, track, waLink } from "@/lib/order";
 import { seo } from "@/lib/seo";
 import { Option } from "@/components/site/Option";
@@ -23,7 +24,8 @@ function CustomPage() {
   const [idea, setIdea] = useState("");
   const [age, setAge] = useState(false);
   const [warn, setWarn] = useState(false);
-  const fmt = (n: number) => formatTry(n, lang, data.settings.currency_symbol);
+  const cur = useCurrency();
+  const fmt = (n: number) => formatPrice(n, cur, lang, data.settings, data.settings.currency_symbol);
   const materialLabel = material === "unsure" ? t("custom.notSure") : material ? t(`metal.${material}`) : "";
 
   const send = (e: React.MouseEvent) => {

@@ -3,7 +3,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { translate, useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { computePrice, formatTry, METALS, type MetalType } from "@/lib/pricing";
+import { computePrice, METALS, type MetalType } from "@/lib/pricing";
+import { formatForMessage, formatPrice, useCurrency } from "@/lib/currency";
 import { newOrderId, orderMessage, sendToCrm, track, waLink, type DeliveryOption, type ScanOption } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
 import { TeethPicker } from "@/components/site/TeethPicker";
@@ -66,7 +67,9 @@ function ProductPage() {
 
   const row = rows.find((r) => r.metal_type === metal) ?? rows.find((r) => r.metal_type === metals[0]);
   const price = computePrice(row, teeth.length || (fixed ?? 1), data.settings.usd_try);
-  const priceText = price === null ? t("price.ask") : formatTry(price, lang, data.settings.currency_symbol);
+  const cur = useCurrency();
+  const priceText = price === null ? t("price.ask") : formatPrice(price, cur, lang, data.settings, data.settings.currency_symbol);
+  const msgPrice = price === null ? t("price.ask") : formatForMessage(price, cur, lang, data.settings);
 
   const teethOk = fixed ? teeth.length === fixed : teeth.length > 0;
   const answered = [!!metal, !!color, teethOk, !!scan, !!delivery, cash, age && kvkk];
@@ -86,7 +89,7 @@ function ProductPage() {
     sendToCrm({
       order_id: oid, source: "Website", language: lang.toUpperCase(), product: product.product_name_en,
       metal_type: metal, metal_color: color, teeth: [...teeth].sort((a, b) => a - b).join(", "),
-      scan_option: scan, delivery_option: delivery, estimated_price: price ?? "", status: "1 – Order created on website",
+      scan_option: scan, delivery_option: delivery, estimated_price: price ?? "", currency: cur, status: "1 – Order created on website",
     });
   };
 
@@ -204,6 +207,7 @@ function ProductPage() {
           scan={scan}
           delivery={delivery}
           price={priceText}
+          msgPrice={msgPrice}
           email={data.settings.scan_email}
           wa={data.settings.whatsapp_number}
         />
@@ -212,7 +216,7 @@ function ProductPage() {
   );
 }
 
-function OrderPanel(p: { lang: Lang; onClose: () => void; id: string; product: string; metal: string; color: string; teeth: number[]; scan: ScanOption; delivery: DeliveryOption; price: string; email: string; wa: string }) {
+function OrderPanel(p: { lang: Lang; onClose: () => void; id: string; product: string; metal: string; color: string; teeth: number[]; scan: ScanOption; delivery: DeliveryOption; price: string; msgPrice: string; email: string; wa: string }) {
   const t = (k: string) => translate(p.lang, k);
   const last = t(p.delivery === "pickup" ? "road.pickup" : "road.ship");
   const steps: { text: string; email?: boolean }[] =
@@ -221,7 +225,7 @@ function OrderPanel(p: { lang: Lang; onClose: () => void; id: string; product: s
       : p.scan === "other"
         ? [{ text: t("road.callDentist") }, { text: t("road.getScan"), email: true }, { text: t("road.plan") }, { text: last }]
         : [{ text: t("road.emailStl"), email: true }, { text: t("road.plan") }, { text: last }];
-  const msg = orderMessage(p.lang, { id: p.id, product: p.product, metal: p.metal, color: p.color, teeth: p.teeth, scan: p.scan, delivery: p.delivery, price: p.price });
+  const msg = orderMessage(p.lang, { id: p.id, product: p.product, metal: p.metal, color: p.color, teeth: p.teeth, scan: p.scan, delivery: p.delivery, price: p.msgPrice });
 
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 overflow-y-auto bg-background">
