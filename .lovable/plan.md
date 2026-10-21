@@ -3,7 +3,7 @@
 ## 1. Gift Card page (copy of 7evenacegrillz.fr gift card)
 - New page in both languages: /en/gift-card and /tr/hediye-karti, with a menu link "GIFT CARD" / "HEDİYE KARTI".
 - Same layout as the reference: big gift card image on the left (on top on phones), title "Gift card", price, an amount picker, quantity, and the main button.
-- Amounts: the same list as the reference (20 up to 6,000), shown as a dropdown, set in euros and converted to the chosen currency.
+- Amounts: the same list as the reference (5,000 / 8,000 / 10,000 / 12,000 / 15,000 TRY, plus a "Custom" option where the buyer types their own amount), shown as a dropdown, set in TRY and converted to the chosen currency.
 - No checkout, as on the rest of the site: the button is "CREATE AN ORDER" and sends the gift card order to WhatsApp and to the CRM sheet, with a new order ID. The ManyChat first line stays exactly the same.
 - A gift card image in the site's pink/lime style will be generated.
 
