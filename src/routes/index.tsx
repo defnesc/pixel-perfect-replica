@@ -1,6 +1,6 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { LANG_STORAGE_KEY } from "@/i18n";
+import { readSavedLang } from "@/i18n";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -23,8 +23,8 @@ export const Route = createFileRoute("/")({
 function LangRedirect() {
   const navigate = useNavigate();
   useEffect(() => {
-    const saved = localStorage.getItem(LANG_STORAGE_KEY);
-    const lang = saved === "en" || saved === "tr" ? saved : navigator.language?.toLowerCase().startsWith("tr") ? "tr" : "en";
+    const saved = readSavedLang();
+    const lang = saved ?? (navigator.language?.toLowerCase().startsWith("tr") ? "tr" : "en");
     navigate({ to: "/$lang", params: { lang }, replace: true });
   }, [navigate]);
   return <div className="flex min-h-screen items-center justify-center font-display text-5xl">333</div>;

@@ -1,6 +1,6 @@
 import { createFileRoute, notFound, Outlet } from "@tanstack/react-router";
 import { useEffect } from "react";
-import { isLang, LANG_STORAGE_KEY } from "@/i18n";
+import { isLang, saveLang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
 import { Footer, Header } from "@/components/site/Shell";
 
@@ -18,7 +18,7 @@ export const Route = createFileRoute("/$lang")({
 function LangLayout() {
   const { lang } = Route.useParams();
   useEffect(() => {
-    localStorage.setItem(LANG_STORAGE_KEY, lang);
+    if (isLang(lang)) saveLang(lang);
     document.documentElement.lang = lang;
   }, [lang]);
   return (
