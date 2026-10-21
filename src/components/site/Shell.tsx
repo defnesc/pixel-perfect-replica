@@ -1,40 +1,65 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { saveLang, useLang, useT, type Lang } from "@/i18n";
+import { CURRENCIES, CURRENCY_SYMBOL, setCurrency, useCurrency } from "@/lib/currency";
+
+const TR_ALIASES: [string, string][] = [["/privacy", "/gizlilik"], ["/gift-card", "/hediye-karti"], ["/jewelry", "/taki"]];
+
+function NavLinks({ className }: { className: string }) {
+  const lang = useLang();
+  const t = useT();
+  const navCls = "tap flex shrink-0 items-center label-xs text-[11px] sm:text-xs";
+  const active = { className: "text-primary" };
+  return (
+    <nav className={className}>
+      <Link to="/$lang" params={{ lang }} activeOptions={{ exact: true }} className={navCls} activeProps={active}>{t("nav.catalog")}</Link>
+      <Link to="/$lang/custom" params={{ lang }} className={navCls} activeProps={active}>{t("nav.custom")}</Link>
+      <Link to={lang === "tr" ? "/$lang/taki" : "/$lang/jewelry"} params={{ lang }} className={navCls} activeProps={active}>{t("nav.jewelry")}</Link>
+      <Link to={lang === "tr" ? "/$lang/hediye-karti" : "/$lang/gift-card"} params={{ lang }} className={navCls} activeProps={active}>{t("nav.gift")}</Link>
+      <Link to="/$lang/faq" params={{ lang }} className={navCls} activeProps={active}>{t("nav.faq")}</Link>
+    </nav>
+  );
+}
 
 export function Header() {
   const lang = useLang();
   const t = useT();
   const loc = useLocation();
   const navigate = useNavigate();
+  const cur = useCurrency();
   const switchTo = (l: Lang) => {
     if (l === lang) return;
     saveLang(l);
     let rest = loc.pathname.replace(/^\/(en|tr)/, "");
-    if (l === "tr") rest = rest.replace(/^\/privacy/, "/gizlilik");
-    else rest = rest.replace(/^\/gizlilik/, "/privacy");
+    for (const [en, tr] of TR_ALIASES) {
+      if (l === "tr") rest = rest.replace(new RegExp(`^${en}`), tr);
+      else rest = rest.replace(new RegExp(`^${tr}`), en);
+    }
     navigate({ to: `/${l}${rest}` as "/" });
   };
-  const navCls = "tap flex items-center label-xs text-[11px] sm:text-xs";
-  const active = { className: "text-primary" };
+  const sw = (on: boolean) => `h-8 min-w-8 rounded-full px-2 text-[11px] font-bold ${on ? "bg-primary text-primary-foreground" : ""}`;
   return (
     <header className="sticky top-2 z-40 px-2">
-      <div className="mx-auto flex h-14 max-w-[1200px] items-center justify-between gap-2 rounded-full border border-border bg-background/60 pl-5 pr-2 backdrop-blur-md">
-        <Link to="/$lang" params={{ lang }} className="font-display text-xl">333</Link>
-        <nav className="flex items-center gap-3 sm:gap-8">
-          <Link to="/$lang" params={{ lang }} activeOptions={{ exact: true }} className={navCls} activeProps={active}>{t("nav.catalog")}</Link>
-          <Link to="/$lang/custom" params={{ lang }} className={navCls} activeProps={active}>{t("nav.custom")}</Link>
-          <Link to="/$lang/faq" params={{ lang }} className={navCls} activeProps={active}>{t("nav.faq")}</Link>
-        </nav>
-        <div className="flex items-center label-xs">
-          {(["en", "tr"] as Lang[]).map((l, i) => (
-            <span key={l} className="flex items-center">
-              
-              <button type="button" onClick={() => switchTo(l)} className={`h-8 min-w-8 rounded-full px-2 text-[11px] font-bold ${l === lang ? "bg-primary text-primary-foreground" : ""}`} aria-current={l === lang}>
+      <div className="mx-auto max-w-[1200px] rounded-[28px] border border-border bg-background/60 backdrop-blur-md">
+        <div className="flex h-14 items-center justify-between gap-2 pl-5 pr-2">
+          <Link to="/$lang" params={{ lang }} className="font-display text-xl">333</Link>
+          <NavLinks className="hidden items-center gap-6 lg:flex" />
+          <div className="flex items-center gap-1 label-xs">
+            <div className="flex items-center" role="group" aria-label={t("currency.label")}>
+              {CURRENCIES.map((c) => (
+                <button key={c} type="button" onClick={() => setCurrency(c)} className={sw(c === cur)} aria-pressed={c === cur} aria-label={c}>
+                  {CURRENCY_SYMBOL[c]}
+                </button>
+              ))}
+            </div>
+            <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+            {(["en", "tr"] as Lang[]).map((l) => (
+              <button key={l} type="button" onClick={() => switchTo(l)} className={sw(l === lang)} aria-current={l === lang}>
                 {l.toUpperCase()}
               </button>
-            </span>
-          ))}
+            ))}
+          </div>
         </div>
+        <NavLinks className="flex items-center gap-5 overflow-x-auto px-5 pb-1 -mt-2 [scrollbar-width:none] lg:hidden" />
       </div>
     </header>
   );

@@ -14,8 +14,12 @@ import { Route as LangRouteImport } from './routes/$lang'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
 import { Route as LangCustomRouteImport } from './routes/$lang.custom'
 import { Route as LangFaqRouteImport } from './routes/$lang.faq'
+import { Route as LangGiftCardRouteImport } from './routes/$lang.gift-card'
 import { Route as LangGizlilikRouteImport } from './routes/$lang.gizlilik'
+import { Route as LangHediyeKartiRouteImport } from './routes/$lang.hediye-karti'
+import { Route as LangJewelryRouteImport } from './routes/$lang.jewelry'
 import { Route as LangPrivacyRouteImport } from './routes/$lang.privacy'
+import { Route as LangTakiRouteImport } from './routes/$lang.taki'
 import { Route as LangProductIdRouteImport } from './routes/$lang.product.$id'
 
 const IndexRoute = IndexRouteImport.update({
@@ -43,14 +47,34 @@ const LangFaqRoute = LangFaqRouteImport.update({
   path: '/faq',
   getParentRoute: () => LangRoute,
 } as any)
+const LangGiftCardRoute = LangGiftCardRouteImport.update({
+  id: '/gift-card',
+  path: '/gift-card',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangGizlilikRoute = LangGizlilikRouteImport.update({
   id: '/gizlilik',
   path: '/gizlilik',
   getParentRoute: () => LangRoute,
 } as any)
+const LangHediyeKartiRoute = LangHediyeKartiRouteImport.update({
+  id: '/hediye-karti',
+  path: '/hediye-karti',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangJewelryRoute = LangJewelryRouteImport.update({
+  id: '/jewelry',
+  path: '/jewelry',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangPrivacyRoute = LangPrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangTakiRoute = LangTakiRouteImport.update({
+  id: '/taki',
+  path: '/taki',
   getParentRoute: () => LangRoute,
 } as any)
 const LangProductIdRoute = LangProductIdRouteImport.update({
@@ -64,8 +88,12 @@ export interface FileRoutesByFullPath {
   '/$lang': typeof LangRouteWithChildren
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
+  '/$lang/gift-card': typeof LangGiftCardRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
+  '/$lang/hediye-karti': typeof LangHediyeKartiRoute
+  '/$lang/jewelry': typeof LangJewelryRoute
   '/$lang/privacy': typeof LangPrivacyRoute
+  '/$lang/taki': typeof LangTakiRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/product/$id': typeof LangProductIdRoute
 }
@@ -73,8 +101,12 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
+  '/$lang/gift-card': typeof LangGiftCardRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
+  '/$lang/hediye-karti': typeof LangHediyeKartiRoute
+  '/$lang/jewelry': typeof LangJewelryRoute
   '/$lang/privacy': typeof LangPrivacyRoute
+  '/$lang/taki': typeof LangTakiRoute
   '/$lang': typeof LangIndexRoute
   '/$lang/product/$id': typeof LangProductIdRoute
 }
@@ -84,8 +116,12 @@ export interface FileRoutesById {
   '/$lang': typeof LangRouteWithChildren
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
+  '/$lang/gift-card': typeof LangGiftCardRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
+  '/$lang/hediye-karti': typeof LangHediyeKartiRoute
+  '/$lang/jewelry': typeof LangJewelryRoute
   '/$lang/privacy': typeof LangPrivacyRoute
+  '/$lang/taki': typeof LangTakiRoute
   '/$lang/': typeof LangIndexRoute
   '/$lang/product/$id': typeof LangProductIdRoute
 }
@@ -96,8 +132,12 @@ export interface FileRouteTypes {
     | '/$lang'
     | '/$lang/custom'
     | '/$lang/faq'
+    | '/$lang/gift-card'
     | '/$lang/gizlilik'
+    | '/$lang/hediye-karti'
+    | '/$lang/jewelry'
     | '/$lang/privacy'
+    | '/$lang/taki'
     | '/$lang/'
     | '/$lang/product/$id'
   fileRoutesByTo: FileRoutesByTo
@@ -105,8 +145,12 @@ export interface FileRouteTypes {
     | '/'
     | '/$lang/custom'
     | '/$lang/faq'
+    | '/$lang/gift-card'
     | '/$lang/gizlilik'
+    | '/$lang/hediye-karti'
+    | '/$lang/jewelry'
     | '/$lang/privacy'
+    | '/$lang/taki'
     | '/$lang'
     | '/$lang/product/$id'
   id:
@@ -115,8 +159,12 @@ export interface FileRouteTypes {
     | '/$lang'
     | '/$lang/custom'
     | '/$lang/faq'
+    | '/$lang/gift-card'
     | '/$lang/gizlilik'
+    | '/$lang/hediye-karti'
+    | '/$lang/jewelry'
     | '/$lang/privacy'
+    | '/$lang/taki'
     | '/$lang/'
     | '/$lang/product/$id'
   fileRoutesById: FileRoutesById
@@ -163,6 +211,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangFaqRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/gift-card': {
+      id: '/$lang/gift-card'
+      path: '/gift-card'
+      fullPath: '/$lang/gift-card'
+      preLoaderRoute: typeof LangGiftCardRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/gizlilik': {
       id: '/$lang/gizlilik'
       path: '/gizlilik'
@@ -170,11 +225,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangGizlilikRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/hediye-karti': {
+      id: '/$lang/hediye-karti'
+      path: '/hediye-karti'
+      fullPath: '/$lang/hediye-karti'
+      preLoaderRoute: typeof LangHediyeKartiRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/jewelry': {
+      id: '/$lang/jewelry'
+      path: '/jewelry'
+      fullPath: '/$lang/jewelry'
+      preLoaderRoute: typeof LangJewelryRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/privacy': {
       id: '/$lang/privacy'
       path: '/privacy'
       fullPath: '/$lang/privacy'
       preLoaderRoute: typeof LangPrivacyRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/taki': {
+      id: '/$lang/taki'
+      path: '/taki'
+      fullPath: '/$lang/taki'
+      preLoaderRoute: typeof LangTakiRouteImport
       parentRoute: typeof LangRoute
     }
     '/$lang/product/$id': {
@@ -190,8 +266,12 @@ declare module '@tanstack/react-router' {
 interface LangRouteChildren {
   LangCustomRoute: typeof LangCustomRoute
   LangFaqRoute: typeof LangFaqRoute
+  LangGiftCardRoute: typeof LangGiftCardRoute
   LangGizlilikRoute: typeof LangGizlilikRoute
+  LangHediyeKartiRoute: typeof LangHediyeKartiRoute
+  LangJewelryRoute: typeof LangJewelryRoute
   LangPrivacyRoute: typeof LangPrivacyRoute
+  LangTakiRoute: typeof LangTakiRoute
   LangIndexRoute: typeof LangIndexRoute
   LangProductIdRoute: typeof LangProductIdRoute
 }
@@ -199,8 +279,12 @@ interface LangRouteChildren {
 const LangRouteChildren: LangRouteChildren = {
   LangCustomRoute: LangCustomRoute,
   LangFaqRoute: LangFaqRoute,
+  LangGiftCardRoute: LangGiftCardRoute,
   LangGizlilikRoute: LangGizlilikRoute,
+  LangHediyeKartiRoute: LangHediyeKartiRoute,
+  LangJewelryRoute: LangJewelryRoute,
   LangPrivacyRoute: LangPrivacyRoute,
+  LangTakiRoute: LangTakiRoute,
   LangIndexRoute: LangIndexRoute,
   LangProductIdRoute: LangProductIdRoute,
 }

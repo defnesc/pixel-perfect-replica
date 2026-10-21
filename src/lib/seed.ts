@@ -53,5 +53,6 @@ export const SEED: SheetData = {
     metal_colors: ["Yellow", "White", "Rose"],
     currency_symbol: "₺",
     usd_try: 41,
+    eur_try: 45,
   },
 };

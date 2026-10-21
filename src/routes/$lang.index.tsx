@@ -2,7 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { formatTry, lowestPrice } from "@/lib/pricing";
+import { lowestPrice } from "@/lib/pricing";
+import { formatPrice, useCurrency } from "@/lib/currency";
 import { seo } from "@/lib/seo";
 import introAsset from "@/assets/hero-grillz.jpg.asset.json";
 
@@ -15,6 +16,7 @@ function Catalog() {
   const { lang } = Route.useParams() as { lang: Lang };
   const t = useT();
   const { data } = useSuspenseQuery(sheetQuery);
+  const cur = useCurrency();
   const products = data.products.filter((p) => p.active).sort((a, b) => a.sort_order - b.sort_order);
   const goDown = () => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
 
@@ -52,7 +54,7 @@ function Catalog() {
                   {p.image_urls[1] && <img src={p.image_urls[1]} alt="" loading="lazy" width={1024} height={1280} className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" />}
                   <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-3.5 pb-3.5 pt-16 leading-snug">
                     <div className="text-[15px] font-semibold normal-case tracking-normal">{lang === "tr" ? p.product_name_tr : p.product_name_en}</div>
-                    <div className="mt-1 font-mono text-[13px] uppercase tracking-[0.04em]">{low === null ? t("price.ask") : t("catalog.from", { price: formatTry(low, lang, data.settings.currency_symbol) })}</div>
+                    <div className="mt-1 font-mono text-[13px] uppercase tracking-[0.04em]">{low === null ? t("price.ask") : t("catalog.from", { price: formatPrice(low, cur, lang, data.settings, data.settings.currency_symbol) })}</div>
                   </div>
                 </div>
               </Link>

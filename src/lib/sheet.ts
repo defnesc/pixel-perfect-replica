@@ -14,7 +14,7 @@ export interface Product {
   sort_order: number;
 }
 export interface FaqRow { question_en: string; question_tr: string; answer_en: string; answer_tr: string; sort_order: number }
-export interface Settings { whatsapp_number: string; scan_email: string; metal_colors: string[]; currency_symbol: string; usd_try: number }
+export interface Settings { whatsapp_number: string; scan_email: string; metal_colors: string[]; currency_symbol: string; usd_try: number; eur_try: number }
 export interface SheetData { products: Product[]; prices: PriceRow[]; customBase: CustomBaseRow[]; faq: FaqRow[]; settings: Settings }
 
 /**
@@ -48,7 +48,7 @@ export function parseCsv(text: string): Record<string, string>[] {
 
 const num = (v: string | undefined) => (v === "" || v == null ? null : Number(v.replace(/[^\d.,-]/g, "").replace(",", ".")));
 
-type Row = Record<"product_id"|"product_name_en"|"product_name_tr"|"description_en"|"description_tr"|"image_urls"|"teeth_count"|"active"|"sort_order"|"metal_type"|"price"|"currency"|"pricing_mode"|"first_tooth_price"|"extra_tooth_price"|"note_en"|"note_tr"|"question_en"|"question_tr"|"answer_en"|"answer_tr"|"whatsapp_number"|"scan_email"|"metal_colors"|"currency_symbol"|"usd_try", string>;
+type Row = Record<"product_id"|"product_name_en"|"product_name_tr"|"description_en"|"description_tr"|"image_urls"|"teeth_count"|"active"|"sort_order"|"metal_type"|"price"|"currency"|"pricing_mode"|"first_tooth_price"|"extra_tooth_price"|"note_en"|"note_tr"|"question_en"|"question_tr"|"answer_en"|"answer_tr"|"whatsapp_number"|"scan_email"|"metal_colors"|"currency_symbol"|"usd_try"|"eur_try", string>;
 
 async function tab(name: string): Promise<Row[]> {
   const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
@@ -100,6 +100,7 @@ async function loadSheet(): Promise<SheetData> {
         metal_colors: (st.metal_colors || "Yellow, White, Rose").split(",").map((c) => c.trim()).filter(Boolean),
         currency_symbol: st.currency_symbol || "₺",
         usd_try: num(st.usd_try ?? "") || SEED.settings.usd_try,
+        eur_try: num(st.eur_try ?? "") || SEED.settings.eur_try,
       },
     };
   } catch (e) {
