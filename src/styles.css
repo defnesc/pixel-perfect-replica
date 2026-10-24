@@ -219,7 +219,7 @@
 }
 
 /* Touch screens: product card photos crossfade automatically (no hover). */
-@keyframes card-swap { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
-@media (hover: none) {
-  .card-swap { animation: card-swap 8s ease-in-out infinite; }
+@keyframes card-swap { 0%, 38% { opacity: 0; } 50%, 88% { opacity: 1; } 100% { opacity: 0; } }
+@media (hover: none), (pointer: coarse), (max-width: 768px) {
+  .card-swap { animation: card-swap 7s ease-in-out infinite !important; }
 }
