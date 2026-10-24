@@ -1,8 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useT, type Lang } from "@/i18n";
-import { classics, formatTl } from "@/lib/catalog";
 import { seo } from "@/lib/seo";
-import { ProductCard } from "@/components/site/ProductCard";
+import { CatalogBoxes } from "@/components/site/CatalogLanding";
 import introAsset from "@/assets/hero-grillz.jpg.asset.json";
 
 export const Route = createFileRoute("/$lang/")({
@@ -11,7 +10,6 @@ export const Route = createFileRoute("/$lang/")({
 });
 
 function Catalog() {
-  const { lang } = Route.useParams() as { lang: Lang };
   const t = useT();
   const goDown = () => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
 
@@ -36,14 +34,7 @@ function Catalog() {
       </section>
 
       <section id="catalog" className="mx-auto max-w-[1200px] scroll-mt-20 px-4 pt-6">
-        <Link to="/$lang/custom" params={{ lang }} className="pill w-full !border-primary bg-primary text-primary-foreground">
-          {t("cat.custom")} →
-        </Link>
-        <div className="mt-6 grid grid-cols-2 gap-x-2.5 gap-y-[22px] md:grid-cols-3 lg:grid-cols-4">
-          {classics().map((p) => (
-            <ProductCard key={p.folder} p={p} priceText={formatTl(p.price)} />
-          ))}
-        </div>
+        <CatalogBoxes />
       </section>
     </main>
   );
