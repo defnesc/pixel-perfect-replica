@@ -217,3 +217,9 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
 }
+
+/* Touch screens: product card photos crossfade automatically (no hover). */
+@keyframes card-swap { 0%, 40% { opacity: 0; } 50%, 90% { opacity: 1; } 100% { opacity: 0; } }
+@media (hover: none) {
+  .card-swap { animation: card-swap 8s ease-in-out infinite; }
+}

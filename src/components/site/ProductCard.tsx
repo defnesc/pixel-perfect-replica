@@ -18,7 +18,7 @@ export function ProductCard({ p, priceText }: { p: CatalogProduct; priceText: st
         ) : (
           <div className="flex h-full w-full items-center justify-center label-xs text-helper">333</div>
         )}
-        {hover && <img src={hover} alt="" loading="lazy" width={1024} height={1280} className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" />}
+        {hover && <img src={hover} alt="" loading="lazy" width={1024} height={1280} className="card-swap absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" />}
         {badge && <span className="absolute left-3 top-3 rounded-full bg-primary px-3 py-1 font-mono text-[11px] uppercase tracking-[0.04em] text-primary-foreground">{badge}</span>}
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-3.5 pb-3.5 pt-16 leading-snug">
           <div className="text-[15px] font-semibold normal-case tracking-normal">{name}</div>
