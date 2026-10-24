@@ -58,7 +58,7 @@ export function Header() {
             ))}
           </div>
         </div>
-        <NavLinks className="flex items-center gap-5 overflow-x-auto px-5 pb-1 -mt-2 [scrollbar-width:none] lg:hidden" />
+        <NavLinks className="flex items-center justify-center gap-5 overflow-x-auto px-5 pb-1 -mt-2 [scrollbar-width:none] lg:hidden" />
       </div>
     </header>
   );
