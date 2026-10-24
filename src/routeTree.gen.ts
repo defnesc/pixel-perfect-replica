@@ -12,12 +12,16 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LangRouteImport } from './routes/$lang'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
+import { Route as LangCatalogRouteImport } from './routes/$lang.catalog'
+import { Route as LangClassicsRouteImport } from './routes/$lang.classics'
 import { Route as LangCustomRouteImport } from './routes/$lang.custom'
 import { Route as LangFaqRouteImport } from './routes/$lang.faq'
 import { Route as LangGiftCardRouteImport } from './routes/$lang.gift-card'
 import { Route as LangGizlilikRouteImport } from './routes/$lang.gizlilik'
 import { Route as LangHediyeKartiRouteImport } from './routes/$lang.hediye-karti'
 import { Route as LangJewelryRouteImport } from './routes/$lang.jewelry'
+import { Route as LangKatalogRouteImport } from './routes/$lang.katalog'
+import { Route as LangKlasiklerRouteImport } from './routes/$lang.klasikler'
 import { Route as LangPrivacyRouteImport } from './routes/$lang.privacy'
 import { Route as LangTakiRouteImport } from './routes/$lang.taki'
 import { Route as LangProductIdRouteImport } from './routes/$lang.product.$id'
@@ -35,6 +39,16 @@ const LangRoute = LangRouteImport.update({
 const LangIndexRoute = LangIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangCatalogRoute = LangCatalogRouteImport.update({
+  id: '/catalog',
+  path: '/catalog',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangClassicsRoute = LangClassicsRouteImport.update({
+  id: '/classics',
+  path: '/classics',
   getParentRoute: () => LangRoute,
 } as any)
 const LangCustomRoute = LangCustomRouteImport.update({
@@ -67,6 +81,16 @@ const LangJewelryRoute = LangJewelryRouteImport.update({
   path: '/jewelry',
   getParentRoute: () => LangRoute,
 } as any)
+const LangKatalogRoute = LangKatalogRouteImport.update({
+  id: '/katalog',
+  path: '/katalog',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangKlasiklerRoute = LangKlasiklerRouteImport.update({
+  id: '/klasikler',
+  path: '/klasikler',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangPrivacyRoute = LangPrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -86,12 +110,16 @@ const LangProductIdRoute = LangProductIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
+  '/$lang/catalog': typeof LangCatalogRoute
+  '/$lang/classics': typeof LangClassicsRoute
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
   '/$lang/gift-card': typeof LangGiftCardRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
   '/$lang/hediye-karti': typeof LangHediyeKartiRoute
   '/$lang/jewelry': typeof LangJewelryRoute
+  '/$lang/katalog': typeof LangKatalogRoute
+  '/$lang/klasikler': typeof LangKlasiklerRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/taki': typeof LangTakiRoute
   '/$lang/': typeof LangIndexRoute
@@ -99,12 +127,16 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$lang/catalog': typeof LangCatalogRoute
+  '/$lang/classics': typeof LangClassicsRoute
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
   '/$lang/gift-card': typeof LangGiftCardRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
   '/$lang/hediye-karti': typeof LangHediyeKartiRoute
   '/$lang/jewelry': typeof LangJewelryRoute
+  '/$lang/katalog': typeof LangKatalogRoute
+  '/$lang/klasikler': typeof LangKlasiklerRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/taki': typeof LangTakiRoute
   '/$lang': typeof LangIndexRoute
@@ -114,12 +146,16 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
+  '/$lang/catalog': typeof LangCatalogRoute
+  '/$lang/classics': typeof LangClassicsRoute
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
   '/$lang/gift-card': typeof LangGiftCardRoute
   '/$lang/gizlilik': typeof LangGizlilikRoute
   '/$lang/hediye-karti': typeof LangHediyeKartiRoute
   '/$lang/jewelry': typeof LangJewelryRoute
+  '/$lang/katalog': typeof LangKatalogRoute
+  '/$lang/klasikler': typeof LangKlasiklerRoute
   '/$lang/privacy': typeof LangPrivacyRoute
   '/$lang/taki': typeof LangTakiRoute
   '/$lang/': typeof LangIndexRoute
@@ -130,12 +166,16 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$lang'
+    | '/$lang/catalog'
+    | '/$lang/classics'
     | '/$lang/custom'
     | '/$lang/faq'
     | '/$lang/gift-card'
     | '/$lang/gizlilik'
     | '/$lang/hediye-karti'
     | '/$lang/jewelry'
+    | '/$lang/katalog'
+    | '/$lang/klasikler'
     | '/$lang/privacy'
     | '/$lang/taki'
     | '/$lang/'
@@ -143,12 +183,16 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$lang/catalog'
+    | '/$lang/classics'
     | '/$lang/custom'
     | '/$lang/faq'
     | '/$lang/gift-card'
     | '/$lang/gizlilik'
     | '/$lang/hediye-karti'
     | '/$lang/jewelry'
+    | '/$lang/katalog'
+    | '/$lang/klasikler'
     | '/$lang/privacy'
     | '/$lang/taki'
     | '/$lang'
@@ -157,12 +201,16 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$lang'
+    | '/$lang/catalog'
+    | '/$lang/classics'
     | '/$lang/custom'
     | '/$lang/faq'
     | '/$lang/gift-card'
     | '/$lang/gizlilik'
     | '/$lang/hediye-karti'
     | '/$lang/jewelry'
+    | '/$lang/katalog'
+    | '/$lang/klasikler'
     | '/$lang/privacy'
     | '/$lang/taki'
     | '/$lang/'
@@ -195,6 +243,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/$lang/'
       preLoaderRoute: typeof LangIndexRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/catalog': {
+      id: '/$lang/catalog'
+      path: '/catalog'
+      fullPath: '/$lang/catalog'
+      preLoaderRoute: typeof LangCatalogRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/classics': {
+      id: '/$lang/classics'
+      path: '/classics'
+      fullPath: '/$lang/classics'
+      preLoaderRoute: typeof LangClassicsRouteImport
       parentRoute: typeof LangRoute
     }
     '/$lang/custom': {
@@ -239,6 +301,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangJewelryRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/katalog': {
+      id: '/$lang/katalog'
+      path: '/katalog'
+      fullPath: '/$lang/katalog'
+      preLoaderRoute: typeof LangKatalogRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/klasikler': {
+      id: '/$lang/klasikler'
+      path: '/klasikler'
+      fullPath: '/$lang/klasikler'
+      preLoaderRoute: typeof LangKlasiklerRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/privacy': {
       id: '/$lang/privacy'
       path: '/privacy'
@@ -264,12 +340,16 @@ declare module '@tanstack/react-router' {
 }
 
 interface LangRouteChildren {
+  LangCatalogRoute: typeof LangCatalogRoute
+  LangClassicsRoute: typeof LangClassicsRoute
   LangCustomRoute: typeof LangCustomRoute
   LangFaqRoute: typeof LangFaqRoute
   LangGiftCardRoute: typeof LangGiftCardRoute
   LangGizlilikRoute: typeof LangGizlilikRoute
   LangHediyeKartiRoute: typeof LangHediyeKartiRoute
   LangJewelryRoute: typeof LangJewelryRoute
+  LangKatalogRoute: typeof LangKatalogRoute
+  LangKlasiklerRoute: typeof LangKlasiklerRoute
   LangPrivacyRoute: typeof LangPrivacyRoute
   LangTakiRoute: typeof LangTakiRoute
   LangIndexRoute: typeof LangIndexRoute
@@ -277,12 +357,16 @@ interface LangRouteChildren {
 }
 
 const LangRouteChildren: LangRouteChildren = {
+  LangCatalogRoute: LangCatalogRoute,
+  LangClassicsRoute: LangClassicsRoute,
   LangCustomRoute: LangCustomRoute,
   LangFaqRoute: LangFaqRoute,
   LangGiftCardRoute: LangGiftCardRoute,
   LangGizlilikRoute: LangGizlilikRoute,
   LangHediyeKartiRoute: LangHediyeKartiRoute,
   LangJewelryRoute: LangJewelryRoute,
+  LangKatalogRoute: LangKatalogRoute,
+  LangKlasiklerRoute: LangKlasiklerRoute,
   LangPrivacyRoute: LangPrivacyRoute,
   LangTakiRoute: LangTakiRoute,
   LangIndexRoute: LangIndexRoute,
