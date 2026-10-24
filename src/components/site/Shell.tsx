@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { saveLang, useLang, useT, type Lang } from "@/i18n";
 import { CURRENCIES, CURRENCY_SYMBOL, setCurrency, useCurrency } from "@/lib/currency";
 
-const TR_ALIASES: [string, string][] = [["/privacy", "/gizlilik"], ["/gift-card", "/hediye-karti"], ["/jewelry", "/taki"]];
+const TR_ALIASES: [string, string][] = [["/privacy", "/gizlilik"], ["/gift-card", "/hediye-karti"], ["/jewelry", "/taki"], ["/catalog", "/katalog"], ["/classics", "/klasikler"]];
 
 function NavLinks({ className }: { className: string }) {
   const lang = useLang();
@@ -11,8 +11,7 @@ function NavLinks({ className }: { className: string }) {
   const active = { className: "text-primary" };
   return (
     <nav className={className}>
-      <Link to="/$lang" params={{ lang }} activeOptions={{ exact: true }} className={navCls} activeProps={active}>{t("nav.catalog")}</Link>
-      <Link to="/$lang/custom" params={{ lang }} className={navCls} activeProps={active}>{t("nav.custom")}</Link>
+      <Link to={lang === "tr" ? "/$lang/katalog" : "/$lang/catalog"} params={{ lang }} className={navCls} activeProps={active}>{t("nav.catalog")}</Link>
       <Link to={lang === "tr" ? "/$lang/taki" : "/$lang/jewelry"} params={{ lang }} className={navCls} activeProps={active}>{t("nav.jewelry")}</Link>
       <Link to={lang === "tr" ? "/$lang/hediye-karti" : "/$lang/gift-card"} params={{ lang }} className={navCls} activeProps={active}>{t("nav.gift")}</Link>
       <Link to="/$lang/faq" params={{ lang }} className={navCls} activeProps={active}>{t("nav.faq")}</Link>

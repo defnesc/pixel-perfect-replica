@@ -1,22 +1,20 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { translate, useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { computePrice, METALS, type MetalType } from "@/lib/pricing";
+import { ADDONS, findProduct, formatTl, groupOf, orderTotals, photoUrl, piecePrice, productPhotos, type CatalogProduct } from "@/lib/catalog";
 import { formatForMessage, formatPrice, useCurrency } from "@/lib/currency";
-import { newOrderId, orderMessage, sendToCrm, track, waLink, type DeliveryOption, type ScanOption } from "@/lib/order";
+import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
-import { TeethPicker } from "@/components/site/TeethPicker";
 import { Faq } from "@/components/site/Faq";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
 
 export const Route = createFileRoute("/$lang/product/$id")({
-  loader: async ({ context, params }) => {
-    const data = await context.queryClient.ensureQueryData(sheetQuery);
-    const p = data.products.find((x) => x.product_id === params.id && x.active);
+  loader: ({ params }) => {
+    const p = findProduct(params.id);
     if (!p) throw notFound();
-    return { name_en: p.product_name_en, name_tr: p.product_name_tr };
+    return { name_en: p.name, name_tr: p.name_tr };
   },
   head: ({ params, loaderData }) => {
     const lang = params.lang as Lang;
@@ -41,233 +39,222 @@ export const Route = createFileRoute("/$lang/product/$id")({
   component: ProductPage,
 });
 
-const QIDS = ["q-metal", "q-color", "q-teeth", "q-scan", "q-delivery", "q-payment", "q-confirm"] as const;
-
 function ProductPage() {
   const { lang, id } = Route.useParams() as { lang: Lang; id: string };
-  const t = useT();
+  const product = findProduct(id);
+  if (!product) throw notFound();
+  return product.section === "custom" ? <CustomProduct lang={lang} product={product} /> : <ClassicsProduct lang={lang} product={product} />;
+}
+
+function useFmt(lang: Lang) {
   const { data } = useSuspenseQuery(sheetQuery);
-  const product = data.products.find((p) => p.product_id === id)!;
-  const rows = data.prices.filter((r) => r.product_id === id);
-  const metals = METALS.filter((m) => rows.some((r) => r.metal_type === m));
-  const fixed = product.teeth_count === "any" ? null : product.teeth_count;
-  const name = lang === "tr" ? product.product_name_tr : product.product_name_en;
-
-  const [metal, setMetal] = useState<MetalType | null>(null);
-  const [color, setColor] = useState<string | null>(null);
-  const [teeth, setTeeth] = useState<number[]>([]);
-  const [scan, setScan] = useState<ScanOption | null>(null);
-  const [delivery, setDelivery] = useState<DeliveryOption | null>(null);
-  const [cash, setCash] = useState(false);
-  const [age, setAge] = useState(false);
-  const [kvkk, setKvkk] = useState(false);
-  const [flag, setFlag] = useState<string | null>(null);
-  const [orderId, setOrderId] = useState<string | null>(null);
-  const [img, setImg] = useState(0);
-
-  const row = rows.find((r) => r.metal_type === metal) ?? rows.find((r) => r.metal_type === metals[0]);
-  const price = computePrice(row, teeth.length || (fixed ?? 1), data.settings.usd_try);
   const cur = useCurrency();
-  const priceText = price === null ? t("price.ask") : formatPrice(price, cur, lang, data.settings, data.settings.currency_symbol);
-  const msgPrice = price === null ? t("price.ask") : formatForMessage(price, cur, lang, data.settings);
+  const fmt = (n: number) => (cur === "TRY" ? formatTl(n) : formatPrice(n, cur, lang, data.settings, data.settings.currency_symbol));
+  return { fmt, cur, settings: data.settings };
+}
 
-  const teethOk = fixed ? teeth.length === fixed : teeth.length > 0;
-  const answered = [!!metal, !!color, teethOk, !!scan, !!delivery, cash, age && kvkk];
-  const ready = answered.every(Boolean);
+function Gallery({ product, name }: { product: CatalogProduct; name: string }) {
+  const photos = productPhotos(product);
+  const [img, setImg] = useState(0);
+  return (
+    <div className="md:sticky md:top-24 md:self-start">
+      <div className="flex snap-x snap-mandatory overflow-x-auto" onScroll={(e) => setImg(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>
+        {(photos.length ? photos : [undefined]).map((src, i) =>
+          src ? (
+            <img key={i} src={src} alt={name} width={1024} height={1280} loading={i ? "lazy" : "eager"} className="aspect-[4/5] w-full shrink-0 snap-center object-cover md:rounded-[20px]" />
+          ) : (
+            <div key={i} className="flex aspect-[4/5] w-full shrink-0 snap-center items-center justify-center bg-surface label-xs text-helper md:rounded-[20px]">333</div>
+          ),
+        )}
+      </div>
+      {photos.length > 1 && (
+        <div className="mt-2 flex justify-center gap-1.5">
+          {photos.map((_, i) => <span key={i} className={`h-1.5 w-6 rounded-full ${i === img ? "bg-primary" : "bg-foreground/20"}`} />)}
+        </div>
+      )}
+    </div>
+  );
+}
 
-  const create = () => {
-    if (!ready) {
-      const qid: string = QIDS[answered.findIndex((a) => !a)] ?? "q-metal";
-      setFlag(qid);
-      document.getElementById(qid)?.scrollIntoView({ behavior: "smooth", block: "start" });
-      setTimeout(() => setFlag(null), 2000);
-      return;
-    }
+function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) {
+  const t = useT();
+  const { fmt, cur, settings } = useFmt(lang);
+  const name = lang === "tr" ? product.name_tr : product.name;
+  const badge = lang === "tr" ? product.badge_tr : product.badge;
+
+  const colour = groupOf(product, "colour")!;
+  const bar = groupOf(product, "bar") ?? groupOf(product, "bar_cutout");
+  const stones = groupOf(product, "stones") ?? groupOf(product, "stones_cherub");
+
+  const [colourIdx, setColourIdx] = useState(0);
+  const [barIdx, setBarIdx] = useState(0);
+  const [stonesIdx, setStonesIdx] = useState(0);
+  const [picked, setPicked] = useState<Set<string>>(new Set());
+
+  const optLabel = (g: NonNullable<typeof bar>, i: number) => (lang === "tr" ? g.options[i]!.option_tr : g.options[i]!.option);
+  const colourName = optLabel(colour, colourIdx);
+  const adds = [bar?.options[barIdx]?.price_add_tl ?? 0, stones?.options[stonesIdx]?.price_add_tl ?? 0];
+  const piece = piecePrice(product, adds);
+  const addons = ADDONS.filter((a) => picked.has(a.addon_id));
+  const { total, savings } = orderTotals(piece, addons);
+
+  const toggleAddon = (aid: string) =>
+    setPicked((s) => {
+      const n = new Set(s);
+      if (n.has(aid)) n.delete(aid);
+      else n.add(aid);
+      return n;
+    });
+
+  const orderHref = () => {
+    const parts = [`${name} (${[colourName, bar && barIdx > 0 ? optLabel(bar, barIdx) : "", stones && stonesIdx > 0 ? optLabel(stones, stonesIdx) : ""].filter(Boolean).join(", ")})`];
+    for (const a of addons) parts.push(`${lang === "tr" ? a.name_tr : a.name} (${t("msg.addonOff")})`);
+    return waLink(settings.whatsapp_number, `${t("msg.order")} ${parts.join(" + ")}. ${t("msg.total")}: ${formatForMessage(total, cur, lang, settings)}`);
+  };
+
+  const onOrder = () => {
     const oid = newOrderId();
-    setOrderId(oid);
-    track("create_order_click", { product: id, metal });
+    track("create_order_click", { product: product.folder });
     sendToCrm({
-      order_id: oid, source: "Website", language: lang.toUpperCase(), product: product.product_name_en,
-      metal_type: metal, metal_color: color, teeth: [...teeth].sort((a, b) => a - b).join(", "),
-      scan_option: scan, delivery_option: delivery, estimated_price: price ?? "", currency: cur, status: "1 – Order created on website",
+      order_id: oid, source: "Website", language: lang.toUpperCase(), product: product.name,
+      colour: colourName, bar: bar ? optLabel(bar, barIdx) : "", stones: stones ? optLabel(stones, stonesIdx) : "",
+      addons: addons.map((a) => a.name).join(", "), estimated_price: total, currency: cur, status: "1 – Order created on website",
     });
   };
 
-  const sortedTeeth = useMemo(() => [...teeth].sort((a, b) => a - b), [teeth]);
-
   return (
-    <main className="mx-auto max-w-6xl pb-28 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:pt-6">
-      <div className="md:sticky md:top-16 md:self-start">
-        <div className="flex snap-x snap-mandatory overflow-x-auto" onScroll={(e) => setImg(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}>
-          {product.image_urls.map((src, i) => (
-            <img key={i} src={src} alt={name} width={1024} height={1280} loading={i ? "lazy" : "eager"} className="aspect-[4/5] w-full shrink-0 snap-center object-cover md:rounded-[20px]" />
-          ))}
-        </div>
-        {product.image_urls.length > 1 && (
-          <div className="mt-2 flex justify-center gap-1.5">
-            {product.image_urls.map((_, i) => <span key={i} className={`h-1.5 w-6 rounded-full ${i === img ? "bg-primary" : "bg-foreground/20"}`} />)}
-          </div>
-        )}
-      </div>
+    <main className="mx-auto max-w-6xl pb-16 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:pt-6">
+      <Gallery product={product} name={name} />
 
       <div className="px-4 md:px-0">
-        <Link to="/$lang" params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
-        <h1 className="h1-xl">{name}</h1>
-        <p className="helper mt-2">{lang === "tr" ? product.description_tr : product.description_en}</p>
-        <p className="mt-4 font-mono text-[13px] uppercase tracking-[0.04em]">{priceText}</p>
-        <p className="helper mb-6">{t("product.estimated")}{row?.pricing_mode === "per_tooth" ? ` · ${t("product.perTooth")}` : ""}</p>
+        <Link to={lang === "tr" ? "/$lang/klasikler" : "/$lang/classics"} params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
+        <div className="mt-2 flex flex-wrap items-center gap-3">
+          <h1 className="h1-xl">{name}</h1>
+          {badge && <span className="rounded-full bg-primary px-3 py-1 font-mono text-[11px] uppercase tracking-[0.04em] text-primary-foreground">{badge}</span>}
+        </div>
+        <p className="mt-4 font-mono text-[15px] uppercase tracking-[0.04em]">
+          {product.compare_at_price && <span className="mr-2 text-helper line-through">{fmt(product.compare_at_price)}</span>}
+          {fmt(piece)}
+        </p>
+        <p className="helper mt-1">{t("product.material")}</p>
 
-        <Question id="q-metal" title={t("q1.title")} highlight={flag === "q-metal"}>
-          <div className="grid gap-2">
-            {metals.map((m) => (
-              <Option key={m} selected={metal === m} onSelect={() => setMetal(m)} label={t(`metal.${m}`)} note={m === "Silver" ? t("q1.silverNote") : undefined} />
-            ))}
-          </div>
-        </Question>
-
-        <Question id="q-color" title={t("q2.title")} highlight={flag === "q-color"}>
-          <p className="helper mb-3">{t("q2.note")}</p>
-          <div className="grid grid-cols-3 gap-2">
-            {data.settings.metal_colors.map((c) => (
-              <button key={c} type="button" onClick={() => setColor(c)} aria-pressed={color === c} className={`pill ${color === c ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
-                {t(`color.${c}`)}
+        <Question id="q-colour" title={t("product.colour")}>
+          <div className="grid grid-cols-2 gap-2">
+            {colour.options.map((o, i) => (
+              <button key={o.option} type="button" onClick={() => setColourIdx(i)} aria-pressed={colourIdx === i} className={`pill ${colourIdx === i ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
+                {lang === "tr" ? o.option_tr : o.option}
               </button>
             ))}
           </div>
+          <p className="helper mt-3">{t("product.colourNote")}</p>
         </Question>
 
-        <Question id="q-teeth" title={t("q3.title")} highlight={flag === "q-teeth"}>
-          <p className="helper mb-3">{fixed ? t("q3.fixed", { n: fixed }) : t("q3.note")}</p>
-          <TeethPicker value={teeth} onChange={setTeeth} max={fixed} />
-        </Question>
+        {bar && (
+          <Question id="q-bar" title={lang === "tr" ? bar.label_tr : bar.label}>
+            <div className="grid gap-2">
+              {bar.options.map((o, i) => (
+                <Option key={o.option} selected={barIdx === i} onSelect={() => setBarIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(o.price_add_tl)}` : undefined} />
+              ))}
+            </div>
+          </Question>
+        )}
 
-        <Question id="q-scan" title={t("q4.title")} highlight={flag === "q-scan"}>
-          <p className="text-sm">{t("q4.intro")}</p>
-          <p className="helper mb-3">{t("q4.note")}</p>
-          <p className="mb-3 text-sm font-semibold">{t("q4.ask")}</p>
-          <div className="grid gap-2">
-            <Option selected={scan === "istanbul"} onSelect={() => setScan("istanbul")} label={t("q4.istanbul")} />
-            <Option selected={scan === "other"} onSelect={() => setScan("other")} label={t("q4.other")} />
-            <Option selected={scan === "stl"} onSelect={() => setScan("stl")} label={t("q4.stl")} note={t("q4.stlNote")} />
+        {stones && (
+          <Question id="q-stones" title={lang === "tr" ? stones.label_tr : stones.label}>
+            <div className="grid gap-2">
+              {stones.options.map((o, i) => (
+                <Option key={o.option} selected={stonesIdx === i} onSelect={() => setStonesIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(o.price_add_tl)}` : undefined} />
+              ))}
+            </div>
+            <p className="helper mt-3">{t("product.stonesNote")}</p>
+          </Question>
+        )}
+
+        <Question id="q-addons" title={t("addon.title")}>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {ADDONS.map((a) => {
+              const on = picked.has(a.addon_id);
+              const img = photoUrl(`${a.photo_folder}-01.jpg`);
+              return (
+                <button key={a.addon_id} type="button" onClick={() => toggleAddon(a.addon_id)} aria-pressed={on} className={`tap overflow-hidden rounded-[20px] border text-left ${on ? "border-primary" : "border-foreground/20"}`}>
+                  {img ? <img src={img} alt="" loading="lazy" width={512} height={512} className="aspect-square w-full object-cover" /> : <div className="flex aspect-square w-full items-center justify-center bg-surface label-xs text-helper">333</div>}
+                  <span className="block p-3">
+                    <span className="block text-[13px] font-semibold leading-snug">{lang === "tr" ? a.name_tr : a.name}</span>
+                    <span className="mt-1 block font-mono text-[12px] uppercase tracking-[0.04em]">
+                      <span className="mr-1.5 text-helper line-through">{fmt(a.normal_price_tl)}</span>
+                      {fmt(a.addon_price_tl)}
+                    </span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </Question>
 
-        <Question id="q-delivery" title={t("q5.title")} highlight={flag === "q-delivery"}>
-          <p className="text-sm font-semibold">{t("q5.ask")}</p>
-          <p className="helper mb-3">{t("q5.note")}</p>
-          <div className="grid gap-2">
-            <Option selected={delivery === "pickup"} onSelect={() => setDelivery("pickup")} label={t("q5.pickup")} />
-            <Option selected={delivery === "ship"} onSelect={() => setDelivery("ship")} label={t("q5.ship")} note={t("q5.shipNote")} />
+        <div className="mt-10 rounded-[20px] bg-surface p-5">
+          <div className="flex items-baseline justify-between gap-4">
+            <span className="label-xs">{t("product.total")}</span>
+            <span className="font-mono text-lg uppercase tracking-[0.04em]">{fmt(total)}</span>
           </div>
-          <p className="helper mt-4 border-l-2 border-primary pl-3">⏱ {t("q5.warning")}</p>
-        </Question>
-
-        <Question id="q-payment" title={t("q6.title")} highlight={flag === "q-payment"}>
-          <p className="mb-3 text-sm font-semibold">{t("q6.ask")}</p>
-          <Option selected={cash} onSelect={() => setCash(!cash)} label={t("q6.cash")} note={t("q6.note")} />
-        </Question>
-
-        <Question id="q-confirm" title="✓" highlight={flag === "q-confirm"}>
-          <div className="grid gap-2">
-            <Option type="check" selected={age} onSelect={() => setAge(!age)} label={t("confirm.age")} />
-            <Option
-              type="check"
-              selected={kvkk}
-              onSelect={() => setKvkk(!kvkk)}
-              label={<>{t("confirm.kvkkPre")}<Link to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"} params={{ lang }} target="_blank" onClick={(e) => e.stopPropagation()} className="underline">{t("confirm.kvkkLink")}</Link>{t("confirm.kvkkPost")}</>}
-            />
-          </div>
-        </Question>
+          {savings > 0 && <p className="mt-1 text-right font-mono text-[13px] uppercase tracking-[0.04em] text-success">{t("product.save", { x: fmt(savings) })}</p>}
+          <a href={orderHref()} target="_blank" rel="noreferrer" onClick={onOrder} className="btn mt-4 w-full bg-success text-success-foreground">
+            <WhatsAppIcon /> {t("cta.order")}
+          </a>
+          <p className="helper mt-3">{t("product.includes")}</p>
+        </div>
 
         <div className="mt-10"><Faq /></div>
       </div>
-
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/85 p-3 backdrop-blur-md">
-        <div className="mx-auto flex max-w-6xl items-center gap-3">
-          <div className="hidden sm:block">
-            <div className="text-sm font-semibold">{priceText}</div>
-            <div className="helper">{t("product.estimated")}</div>
-          </div>
-          <button type="button" onClick={create} aria-disabled={!ready} className={`btn flex-1 ${ready ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}>
-            {t("cta.create")}
-          </button>
-        </div>
-        {flag && <p className="helper mt-1 text-center text-primary">{t("cta.missing")}</p>}
-      </div>
-
-      {orderId && metal && color && scan && delivery && (
-        <OrderPanel
-          lang={lang}
-          onClose={() => setOrderId(null)}
-          id={orderId}
-          product={name}
-          metal={t(`metal.${metal}`)}
-          color={t(`color.${color}`)}
-          teeth={sortedTeeth}
-          scan={scan}
-          delivery={delivery}
-          price={priceText}
-          msgPrice={msgPrice}
-          email={data.settings.scan_email}
-          wa={data.settings.whatsapp_number}
-        />
-      )}
     </main>
   );
 }
 
-function OrderPanel(p: { lang: Lang; onClose: () => void; id: string; product: string; metal: string; color: string; teeth: number[]; scan: ScanOption; delivery: DeliveryOption; price: string; msgPrice: string; email: string; wa: string }) {
-  const t = (k: string) => translate(p.lang, k);
-  const last = t(p.delivery === "pickup" ? "road.pickup" : "road.ship");
-  const steps: { text: string; email?: boolean }[] =
-    p.scan === "istanbul"
-      ? [{ text: t("road.visit") }, { text: t("road.plan") }, { text: last }]
-      : p.scan === "other"
-        ? [{ text: t("road.callDentist") }, { text: t("road.getScan"), email: true }, { text: t("road.plan") }, { text: last }]
-        : [{ text: t("road.emailStl"), email: true }, { text: t("road.plan") }, { text: last }];
-  const msg = orderMessage(p.lang, { id: p.id, product: p.product, metal: p.metal, color: p.color, teeth: p.teeth, scan: p.scan, delivery: p.delivery, price: p.msgPrice });
+function CustomProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) {
+  const t = useT();
+  const { fmt, settings } = useFmt(lang);
+  const name = lang === "tr" ? product.name_tr : product.name;
+  const note = lang === "tr" ? product.price_note_tr : product.price_note;
+  const colour = groupOf(product, "colour")!;
+  const [colourIdx, setColourIdx] = useState(0);
+  const colourName = lang === "tr" ? colour.options[colourIdx]!.option_tr : colour.options[colourIdx]!.option;
+
+  const quoteHref = waLink(settings.whatsapp_number, t("msg.quote", { name, colour: colourName }));
+  const onQuote = () => {
+    track("custom_quote_click", { product: product.folder });
+    sendToCrm({ order_id: newOrderId(), source: "Custom quote", language: lang.toUpperCase(), product: product.name, colour: colourName, status: "1 – Order created on website" });
+  };
 
   return (
-    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 overflow-y-auto bg-background">
-      <div className="mx-auto max-w-xl px-4 pb-10 pt-4">
-        <div className="flex items-center justify-between">
-          <span className="label-xs">#{p.id}</span>
-          <button type="button" onClick={p.onClose} className="tap px-2 label-xs">{t("panel.close")} ×</button>
-        </div>
-        <h1 className="mt-4 h1-xl">{t("panel.title")}</h1>
+    <main className="mx-auto max-w-6xl pb-16 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:pt-6">
+      <Gallery product={product} name={name} />
 
-        <h2 className="mt-8 pb-2 text-lg">{t("panel.summary")}</h2>
-        <dl className="divide-y divide-border text-sm">
-          {[["panel.product", p.product], ["panel.metal", p.metal], ["panel.color", p.color], ["panel.teeth", p.teeth.join(", ")], ["panel.price", p.price]].map(([k, v]) => (
-            <div key={k as string} className="flex justify-between gap-4 py-2"><dt className="helper">{t(k as string)}</dt><dd className="text-right font-medium">{v}</dd></div>
-          ))}
-        </dl>
-        <p className="helper mt-2">{t("panel.priceNote")}</p>
+      <div className="px-4 md:px-0">
+        <Link to="/$lang/custom" params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
+        <h1 className="mt-2 h1-xl">{name}</h1>
+        <p className="mt-4 font-mono text-[15px] uppercase tracking-[0.04em]">
+          {t("card.approx", { price: fmt(product.price) })}{note ? ` · ${note}` : ""}
+        </p>
+        <p className="helper mt-1">{t("product.material")}</p>
 
-        <h2 className="mt-8 pb-2 text-lg">{t("panel.roadmap")}</h2>
-        <ol className="mt-4">
-          {steps.map((s, i) => (
-            <li key={i} className="relative flex gap-4 pb-6 last:pb-0">
-              {i < steps.length - 1 && <span className="absolute left-[15px] top-8 bottom-0 w-px bg-foreground/30" />}
-              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm font-semibold ${i === steps.length - 1 ? "border-success bg-success text-success-foreground" : "border-foreground/30"}`}>{i + 1}</span>
-              <div className="pt-1 text-sm">
-                {s.text}
-                {s.email && <a href={`mailto:${p.email}?subject=${encodeURIComponent(`STL #${p.id}`)}`} className="tap mt-1 flex items-center text-primary underline">{t("panel.emailTo")} {p.email}</a>}
-              </div>
-            </li>
-          ))}
-        </ol>
+        <Question id="q-colour" title={t("product.colour")}>
+          <div className="grid grid-cols-2 gap-2">
+            {colour.options.map((o, i) => (
+              <button key={o.option} type="button" onClick={() => setColourIdx(i)} aria-pressed={colourIdx === i} className={`pill ${colourIdx === i ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
+                {lang === "tr" ? o.option_tr : o.option}
+              </button>
+            ))}
+          </div>
+          <p className="helper mt-3">{t("product.colourNote")}</p>
+        </Question>
 
-        <a
-          href={waLink(p.wa, msg)}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => track("whatsapp_send_click", { order_id: p.id })}
-          className="btn mt-10 w-full bg-success text-success-foreground"
-        >
-          <WhatsAppIcon /> {t("panel.send")}
+        <p className="helper mt-6">{t("product.estimateNote")}</p>
+
+        <a href={quoteHref} target="_blank" rel="noreferrer" onClick={onQuote} className="btn mt-6 w-full bg-success text-success-foreground">
+          <WhatsAppIcon /> {t("cta.quote")}
         </a>
+
+        <div className="mt-10"><Faq /></div>
       </div>
-    </div>
+    </main>
   );
 }
