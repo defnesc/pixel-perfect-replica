@@ -124,10 +124,12 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
 
   return (
     <main className="mx-auto max-w-6xl pb-16 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:pt-6">
+      <div className="px-4 pt-2 md:col-span-2 md:px-0 md:pt-0">
+          <Link to={lang === "tr" ? "/$lang/klasikler" : "/$lang/classics"} params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
+      </div>
       <Gallery product={product} name={name} />
 
       <div className="px-4 md:px-0">
-        <Link to={lang === "tr" ? "/$lang/klasikler" : "/$lang/classics"} params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="h1-xl">{name}</h1>
           {badge && <span className="rounded-full bg-primary px-3 py-1 font-mono text-[11px] uppercase tracking-[0.04em] text-primary-foreground">{badge}</span>}
@@ -225,10 +227,12 @@ function CustomProduct({ lang, product }: { lang: Lang; product: CatalogProduct 
 
   return (
     <main className="mx-auto max-w-6xl pb-16 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:pt-6">
+      <div className="px-4 pt-2 md:col-span-2 md:px-0 md:pt-0">
+          <Link to="/$lang/custom" params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
+      </div>
       <Gallery product={product} name={name} />
 
       <div className="px-4 md:px-0">
-        <Link to="/$lang/custom" params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
         <h1 className="mt-2 h1-xl">{name}</h1>
         <p className="mt-4 font-mono text-[15px] uppercase tracking-[0.04em]">
           {t("card.approx", { price: fmt(product.price) })}{note ? ` · ${note}` : ""}
