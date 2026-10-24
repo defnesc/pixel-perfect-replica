@@ -23,7 +23,7 @@ export function ProductCard({ p, priceText }: { p: CatalogProduct; priceText: st
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-3.5 pb-3.5 pt-16 leading-snug">
           <div className="text-[15px] font-semibold normal-case tracking-normal">{name}</div>
           <div className="mt-1 font-mono text-[13px] uppercase tracking-[0.04em]">
-            {p.compare_at_price && <span className="mr-2 text-helper line-through">{t("card.from", { price: `${new Intl.NumberFormat("tr-TR").format(p.compare_at_price)} TL` })}</span>}
+            {p.compare_at_price && <span className="mr-2 text-helper line-through">{new Intl.NumberFormat("tr-TR").format(p.compare_at_price)} TL</span>}
             {priceText}
           </div>
         </div>
