@@ -1,10 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { useT, type Lang } from "@/i18n";
-import { sheetQuery } from "@/lib/sheet";
-import { lowestPrice } from "@/lib/pricing";
-import { formatPrice, useCurrency } from "@/lib/currency";
+import { classics, formatTl } from "@/lib/catalog";
 import { seo } from "@/lib/seo";
+import { ProductCard } from "@/components/site/ProductCard";
 import introAsset from "@/assets/hero-grillz.jpg.asset.json";
 
 export const Route = createFileRoute("/$lang/")({
@@ -15,9 +13,6 @@ export const Route = createFileRoute("/$lang/")({
 function Catalog() {
   const { lang } = Route.useParams() as { lang: Lang };
   const t = useT();
-  const { data } = useSuspenseQuery(sheetQuery);
-  const cur = useCurrency();
-  const products = data.products.filter((p) => p.active).sort((a, b) => a.sort_order - b.sort_order);
   const goDown = () => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" });
 
   return (
@@ -42,24 +37,12 @@ function Catalog() {
 
       <section id="catalog" className="mx-auto max-w-[1200px] scroll-mt-20 px-4 pt-6">
         <Link to="/$lang/custom" params={{ lang }} className="pill w-full !border-primary bg-primary text-primary-foreground">
-          {t("catalog.customBtn")} →
+          {t("cat.custom")} →
         </Link>
         <div className="mt-6 grid grid-cols-2 gap-x-2.5 gap-y-[22px] md:grid-cols-3 lg:grid-cols-4">
-          {products.map((p) => {
-            const low = lowestPrice(data.prices.filter((r) => r.product_id === p.product_id), data.settings.usd_try);
-            return (
-              <Link key={p.product_id} to="/$lang/product/$id" params={{ lang, id: p.product_id }} className="group block">
-                <div className="relative aspect-[3/4] overflow-hidden rounded-[20px] bg-surface">
-                  <img src={p.image_urls[0]} alt={lang === "tr" ? p.product_name_tr : p.product_name_en} loading="lazy" width={1024} height={1280} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  {p.image_urls[1] && <img src={p.image_urls[1]} alt="" loading="lazy" width={1024} height={1280} className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100" />}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-3.5 pb-3.5 pt-16 leading-snug">
-                    <div className="text-[15px] font-semibold normal-case tracking-normal">{lang === "tr" ? p.product_name_tr : p.product_name_en}</div>
-                    <div className="mt-1 font-mono text-[13px] uppercase tracking-[0.04em]">{low === null ? t("price.ask") : t("catalog.from", { price: formatPrice(low, cur, lang, data.settings, data.settings.currency_symbol) })}</div>
-                  </div>
-                </div>
-              </Link>
-            );
-          })}
+          {classics().map((p) => (
+            <ProductCard key={p.folder} p={p} priceText={formatTl(p.price)} />
+          ))}
         </div>
       </section>
     </main>
