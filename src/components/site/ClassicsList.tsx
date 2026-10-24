@@ -14,8 +14,8 @@ export function ClassicsList() {
       <div className="mt-8 grid grid-cols-2 gap-x-2.5 gap-y-[22px] md:grid-cols-3 lg:grid-cols-4">
         {classics().map((p) => {
           const from = p.option_groups.some((g) => HAS_OPTIONS.includes(g));
-          const price = t(from ? "card.from" : "card.from", { price: formatTl(p.price) });
-          return <ProductCard key={p.folder} p={p} priceText={from ? price : formatTl(p.price)} />;
+          const priceText = from ? t("card.from", { price: formatTl(p.price) }) : formatTl(p.price);
+          return <ProductCard key={p.folder} p={p} priceText={priceText} />;
         })}
       </div>
     </main>
