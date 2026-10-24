@@ -107,7 +107,7 @@
   font-weight: 400;
 }
 
-@utility h1-xl { font-size: clamp(64px, 10vw, 140px); }
+@utility h1-xl { font-size: clamp(30px, 9vw, 140px); overflow-wrap: anywhere; line-height: 1; }
 @utility h2-xl { font-size: clamp(40px, 6vw, 72px); }
 
 @utility btn {

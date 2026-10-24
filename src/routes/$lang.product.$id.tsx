@@ -200,7 +200,6 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
           <a href={orderHref()} target="_blank" rel="noreferrer" onClick={onOrder} className="btn mt-4 w-full bg-success text-success-foreground">
             <WhatsAppIcon /> {t("cta.order")}
           </a>
-          <p className="helper mt-3">{t("product.includes")}</p>
         </div>
 
         <div className="mt-10"><Faq /></div>
