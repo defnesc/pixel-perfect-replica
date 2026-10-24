@@ -17,7 +17,7 @@ function Catalog() {
     <main>
       <section className="relative flex h-[calc(100svh-90px)] flex-col items-center justify-center overflow-hidden">
         <div className="photo-fade absolute inset-x-0 top-[3%] bottom-[14%] overflow-hidden">
-          <div className="absolute inset-0 scale-[1.5] translate-x-[7%]">
+          <div className="absolute inset-0 scale-[1.5] translate-x-[15%]">
             <img src={introAsset.url} alt="" width={1536} height={1755} className="animate-intro absolute inset-0 h-full w-full object-cover opacity-90" />
           </div>
         </div>
