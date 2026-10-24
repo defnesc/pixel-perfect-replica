@@ -7,6 +7,7 @@ import { track, waLink } from "@/lib/order";
 import { seo } from "@/lib/seo";
 import { ProductCard } from "@/components/site/ProductCard";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
+import { BackButton } from "@/components/site/BackButton";
 
 export const Route = createFileRoute("/$lang/custom")({
   head: ({ params }) => seo(params.lang as Lang, "custom", "/custom"),
@@ -20,7 +21,8 @@ function CustomPage() {
   const goDown = () => document.getElementById("designs")?.scrollIntoView({ behavior: "smooth" });
 
   return (
-    <main className="mx-auto max-w-[1200px] px-4 pt-10">
+    <main className="mx-auto max-w-[1200px] px-4 pt-6">
+      <BackButton />
       <section className="flex min-h-[60svh] flex-col items-center justify-center text-center">
         <h1 className="h1-xl">{t("custom2.title")}</h1>
         <p className="mt-4 max-w-[45ch] leading-normal text-helper">{t("custom2.intro")}</p>

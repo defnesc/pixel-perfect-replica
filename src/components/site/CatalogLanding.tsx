@@ -2,8 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { useLang, useT } from "@/i18n";
 import { photoUrl } from "@/lib/catalog";
 
-/** Catalog landing: two large boxes — Classics and Custom. */
-export function CatalogLanding() {
+/** Two large boxes — Classics and Custom. */
+export function CatalogBoxes() {
   const lang = useLang();
   const t = useT();
   const boxes = [
@@ -11,9 +11,7 @@ export function CatalogLanding() {
     { to: "/$lang/custom", img: photoUrl("letter-01.jpg"), title: t("cat.custom"), text: t("cat.customFrom") },
   ] as const;
   return (
-    <main className="mx-auto max-w-[1200px] px-4 pt-10">
-      <h1 className="h1-xl">{t("catalog.title")}</h1>
-      <div className="mt-8 grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2">
         {boxes.map((b) => (
           <Link
             key={b.title}
@@ -34,6 +32,16 @@ export function CatalogLanding() {
           </Link>
         ))}
       </div>
+  );
+}
+
+/** Catalog landing page. */
+export function CatalogLanding() {
+  const t = useT();
+  return (
+    <main className="mx-auto max-w-[1200px] px-4 pt-10">
+      <h1 className="h1-xl">{t("catalog.title")}</h1>
+      <div className="mt-8"><CatalogBoxes /></div>
     </main>
   );
 }
