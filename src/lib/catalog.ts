@@ -50,39 +50,40 @@ export interface Addon {
 }
 
 const num = (v: string | undefined) => (v && v.trim() !== "" ? Number(v) : null);
+const cell = (r: Record<string, string>, k: string) => r[k] ?? "";
 
 export const PRODUCTS: CatalogProduct[] = parseCsv(productsCsv).map((r) => ({
-  folder: r.folder ?? "",
-  name: r.name ?? "",
-  name_tr: r.name_tr ?? "",
-  section: r.section === "custom" ? "custom" : "classics",
-  sort_order: Number(r.sort_order) || 0,
-  photos: Number(r.photos) || 1,
-  main_image: r.main_image ?? "",
-  hover_image: r.hover_image ?? "",
-  price: Number(r.price) || 0,
-  compare_at_price: num(r.compare_at_price),
-  price_type: r.price_type === "estimate" ? "estimate" : "fixed",
-  price_note: r.price_note ?? "",
-  price_note_tr: r.price_note_tr ?? "",
-  badge: r.badge ?? "",
-  badge_tr: r.badge_tr ?? "",
-  option_groups: (r.option_groups ?? "").split(";").map((s) => s.trim()).filter(Boolean),
+  folder: cell(r, "folder"),
+  name: cell(r, "name"),
+  name_tr: cell(r, "name_tr"),
+  section: cell(r, "section") === "custom" ? "custom" : "classics",
+  sort_order: Number(cell(r, "sort_order")) || 0,
+  photos: Number(cell(r, "photos")) || 1,
+  main_image: cell(r, "main_image"),
+  hover_image: cell(r, "hover_image"),
+  price: Number(cell(r, "price")) || 0,
+  compare_at_price: num(r["compare_at_price"]),
+  price_type: cell(r, "price_type") === "estimate" ? "estimate" : "fixed",
+  price_note: cell(r, "price_note"),
+  price_note_tr: cell(r, "price_note_tr"),
+  badge: cell(r, "badge"),
+  badge_tr: cell(r, "badge_tr"),
+  option_groups: cell(r, "option_groups").split(";").map((s) => s.trim()).filter(Boolean),
 }));
 
 export const OPTION_GROUPS: OptionGroup[] = (() => {
   const byId = new Map<string, OptionGroup>();
   for (const r of parseCsv(optionsCsv)) {
-    const id = r.group_id ?? "";
-    if (!byId.has(id)) byId.set(id, { group_id: id, label: r.group_label ?? "", label_tr: r.group_label_tr ?? "", options: [] });
+    const id = cell(r, "group_id");
+    if (!byId.has(id)) byId.set(id, { group_id: id, label: cell(r, "group_label"), label_tr: cell(r, "group_label_tr"), options: [] });
     byId.get(id)!.options.push({
-      option: r.option ?? "",
-      option_tr: r.option_tr ?? "",
-      price_add_tl: Number(r.price_add_tl) || 0,
-      isDefault: r.default === "yes",
-      sort_order: Number(r.sort_order) || 0,
-      small_note: r.small_note ?? "",
-      small_note_tr: r.small_note_tr ?? "",
+      option: cell(r, "option"),
+      option_tr: cell(r, "option_tr"),
+      price_add_tl: Number(cell(r, "price_add_tl")) || 0,
+      isDefault: r["default"] === "yes",
+      sort_order: Number(cell(r, "sort_order")) || 0,
+      small_note: cell(r, "small_note"),
+      small_note_tr: cell(r, "small_note_tr"),
     });
   }
   for (const g of byId.values()) g.options.sort((a, b) => a.sort_order - b.sort_order);
@@ -91,13 +92,13 @@ export const OPTION_GROUPS: OptionGroup[] = (() => {
 
 export const ADDONS: Addon[] = parseCsv(addonsCsv)
   .map((r) => ({
-    addon_id: r.addon_id ?? "",
-    name: r.name ?? "",
-    name_tr: r.name_tr ?? "",
-    photo_folder: r.photo_folder ?? "",
-    normal_price_tl: Number(r.normal_price_tl) || 0,
-    addon_price_tl: Number(r.addon_price_tl) || 0,
-    sort_order: Number(r.sort_order) || 0,
+    addon_id: cell(r, "addon_id"),
+    name: cell(r, "name"),
+    name_tr: cell(r, "name_tr"),
+    photo_folder: cell(r, "photo_folder"),
+    normal_price_tl: Number(cell(r, "normal_price_tl")) || 0,
+    addon_price_tl: Number(cell(r, "addon_price_tl")) || 0,
+    sort_order: Number(cell(r, "sort_order")) || 0,
   }))
   .sort((a, b) => a.sort_order - b.sort_order);
 
