@@ -11,7 +11,7 @@ function line(folder: string) {
 const main = line("star"), addon = line("frame");
 let next = 0;
 const id = () => `line-${++next}`;
-const estimate: CartLine = { id: "estimate", product: "custom-estimate", kind: "estimate", colour: "White", teeth: 3, quantity: 1, options: {}, estimate: { jaw: "Upper", style: "Very detailed", stones: "No stones", engraving: "No engraving" } };
+const estimate: CartLine = { id: "estimate", product: "custom-estimate", kind: "estimate", colour: "White", teeth: 3, quantity: 1, options: {}, estimate: { style: "Very detailed", stones: "No stones", engraving: "No engraving" } };
 const calc = (items: CartLine[], factor = 1) => priceCart(items, PRODUCTS, OPTION_GROUPS, factor, BUILTIN.estimator);
 describe("linked add-ons", () => {
   it("adds main and add-on together and records the parent", () => {
@@ -56,12 +56,13 @@ describe("custom estimates", () => {
     expect(priced.estimated).toBe(21980);
     expect(priced.savings).toBe(0);
   });
-  it("jaw and colour do not affect price", () => expect(calc([{ ...estimate, colour: "Yellow", estimate: { ...estimate.estimate, jaw: "Both", style: "Very detailed", stones: "No stones", engraving: "No engraving" } }]).estimated).toBe(10990));
+  it("colour does not affect price", () => expect(calc([{ ...estimate, colour: "Yellow" }]).estimated).toBe(10990));
+  it("old check links with a jaw stay readable", () => expect(cartSchema.safeParse([{ ...estimate, estimate: { ...estimate.estimate, jaw: "Upper" } }]).success).toBe(true));
   it("uses loaded rows and factor", () => {
     expect(calc([estimate], 1.03).estimated).toBe(11390);
     expect(priceCart([estimate], PRODUCTS, OPTION_GROUPS, 1, BUILTIN.estimator.map((r) => r.option === "First tooth" ? { ...r, price_add_tl: 7490 } : r)).estimated).toBe(11990);
   });
-  it("fully iced is WhatsApp-only", () => expect(calc([{ ...estimate, estimate: { jaw: "Upper", style: "Very detailed", stones: "Fully iced", engraving: "No engraving" } }]).invalid).toBe(true));
+  it("fully iced is priced per tooth", () => expect(calc([{ ...estimate, estimate: { style: "Very detailed", stones: "Fully iced", engraving: "No engraving" } }]).estimated).toBe(37990));
   it("sheet limit controls estimate eligibility", () => expect(estimateCustom(BUILTIN.estimator.map((r) => r.group === "limit" ? { ...r, price_add_tl: 2 } : r), 3, ["Simple", "No stones", "No engraving"])).toBeNull());
   it("check link retains estimates and parent IDs", () => {
     const items = [...setAddonQuantity([], main, addon, 2, id), estimate];
