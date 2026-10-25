@@ -73,7 +73,7 @@ export function CartPage() {
         `${t("msg.orderNew")} #${order.id}`,
         ...orderPrices.lines.map(
           (l) =>
-            `${l.item.kind === "estimate" ? l.item.quantity : l.item.quantity * l.item.teeth}× ${cartLineName(l.item, l.product, lang)}${l.item.addonOf ? ` [${t("addon.label")}]` : ""} (${lineDescription(l.item, optionGroups, lang)})${l.product?.per_tooth || l.item.kind === "estimate" ? ` – ${t(l.product.placement === "gap" ? "cart.gaps" : "cart.teeth", { n: l.item.teeth * l.item.quantity })}` : ""}${l.savings > 0 ? ` (−%${l.product?.extra_piece_discount})` : ""}${l.product?.section === "custom" || l.item.kind === "estimate" ? ` [${t("cart.estimate")}]` : ""} – ${formatForMessage(l.total, cur, lang, rates)}`,
+            `${l.item.kind === "estimate" ? l.item.quantity : l.item.quantity * l.item.teeth}× ${cartLineName(l.item, l.product, lang)}${l.item.addonOf ? ` [${t("addon.label")}]` : ""} (${lineDescription(l.item, optionGroups, lang)})${l.product?.per_tooth || l.item.kind === "estimate" ? ` – ${t(l.product?.placement === "gap" ? "cart.gaps" : "cart.teeth", { n: l.item.teeth * l.item.quantity })}` : ""}${l.savings > 0 ? ` (−%${l.product?.extra_piece_discount})` : ""}${l.product?.section === "custom" || l.item.kind === "estimate" ? ` [${t("cart.estimate")}]` : ""} – ${formatForMessage(l.total, cur, lang, rates)}`,
         ),
         `${t("order.scan")}: ${t(`order.scan.${order.answers.scan}`)}`,
         `${t("order.delivery")}: ${t(`order.delivery.${order.answers.delivery}`)}`,

@@ -28,7 +28,10 @@ export const cartLineSchema = z.object({
   message: "Estimate configuration required",
 });
 export type CartLine = z.infer<typeof cartLineSchema>;
-export const cartSchema = z.array(cartLineSchema).max(100);
+export const cartSchema = z.array(cartLineSchema).max(100).refine((items) =>
+  new Set(items.map((l) => l.id)).size === items.length && items.every((l) => !l.addonOf || items.some((p) => p.id === l.addonOf && !p.addonOf && p.kind !== "estimate")),
+  { message: "Invalid add-on relationship" },
+);
 export const answersSchema = z.object({
   scan: z.enum(["istanbul", "city", "stl"]),
   delivery: z.enum(["pickup", "shipping"]),
