@@ -1,0 +1,102 @@
+import { Link } from "@tanstack/react-router";
+import { Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Stepper } from "./Stepper";
+import { useLang, useT } from "@/i18n";
+import { photoUrl, type OptionGroup } from "@/lib/catalog";
+import { priceCart } from "@/lib/cart-pricing";
+export function lineDescription(
+  item: { colour: string; options: Record<string, string> },
+  groups: OptionGroup[],
+  lang: "en" | "tr",
+) {
+  return [
+    lang === "tr" ? (item.colour === "White" ? "Beyaz" : "Sarı") : item.colour,
+    ...Object.entries(item.options).flatMap(([id, name]) => {
+      const o = groups.find((g) => g.group_id === id)?.options.find((o) => o.option === name);
+      return o && !o.isDefault ? [lang === "tr" ? o.option_tr : o.option] : [];
+    }),
+  ].join(", ");
+}
+export function CartLines({
+  priced,
+  groups,
+  fmt,
+  quantity,
+  remove,
+}: {
+  priced: ReturnType<typeof priceCart>;
+  groups: OptionGroup[];
+  fmt: (n: number) => string;
+  quantity?: (id: string, n: number) => void;
+  remove?: (id: string) => void;
+}) {
+  const lang = useLang();
+  const t = useT();
+  return (
+    <div className="divide-y divide-border">
+      {priced.lines.map((l) => {
+        const p = l.product;
+        const img = p ? photoUrl(p.main_image) : undefined;
+        return (
+          <article key={l.item.id} className="flex gap-4 py-5">
+            <div className="h-24 w-20 shrink-0 overflow-hidden rounded-lg bg-surface">
+              {img && <img src={img} alt="" className="h-full w-full object-cover" />}
+            </div>
+            <div className="min-w-0 flex-1">
+              {p ? (
+                <Link
+                  to="/$lang/product/$id"
+                  params={{ lang, id: p.folder }}
+                  className="font-semibold"
+                >
+                  {lang === "tr" ? p.name_tr : p.name}
+                </Link>
+              ) : (
+                <p className="text-destructive">{t("check.missing", { name: l.item.product })}</p>
+              )}
+              <p className="helper mt-1">{lineDescription(l.item, groups, lang)}</p>
+              {p?.per_tooth && (
+                <p className="helper">
+                  {t(p.placement === "gap" ? "cart.gaps" : "cart.teeth", { n: l.item.teeth })}
+                </p>
+              )}
+              {p?.section === "custom" && (
+                <span className="label-xs text-primary">{t("cart.estimate")}</span>
+              )}
+              {l.invalid && p && <p className="text-destructive">{t("check.invalidOptions")}</p>}
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                {quantity ? (
+                  <Stepper
+                    value={l.item.quantity}
+                    onChange={(n) => quantity(l.item.id, n)}
+                    max={10}
+                    label={t("gift.qty")}
+                  />
+                ) : (
+                  <span className="font-mono">{l.item.quantity}×</span>
+                )}
+                <div className="font-mono text-sm">
+                  {l.savings > 0 && (
+                    <span className="mr-2 text-helper line-through">{fmt(l.full)}</span>
+                  )}
+                  {fmt(l.total)}
+                </div>
+              </div>
+            </div>
+            {remove && (
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("cart.remove")}
+                onClick={() => remove(l.item.id)}
+              >
+                <Trash2 />
+              </Button>
+            )}
+          </article>
+        );
+      })}
+    </div>
+  );
+}

@@ -1,0 +1,23 @@
+import { createFileRoute, redirect } from "@tanstack/react-router";
+import { decodeOrder } from "@/lib/cart-pricing";
+export const Route = createFileRoute("/check")({
+  validateSearch: (s: Record<string, unknown>) => ({ o: typeof s["o"] === "string" ? s["o"] : "" }),
+  beforeLoad: ({ search }) => {
+    throw redirect({
+      to: "/$lang/check",
+      params: { lang: decodeOrder(search.o)?.lang ?? "tr" },
+      search: { o: search.o },
+    });
+  },
+  head: () => ({
+    meta: [
+      { title: "Order Check — 333 Grillz" },
+      { name: "description", content: "333 Grillz order price comparison." },
+      { property: "og:title", content: "Order Check — 333 Grillz" },
+      { property: "og:description", content: "333 Grillz order price comparison." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+      { name: "robots", content: "noindex, nofollow" },
+    ],
+  }),
+});

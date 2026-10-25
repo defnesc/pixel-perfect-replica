@@ -1,0 +1,47 @@
+import { Minus, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useT } from "@/i18n";
+export function Stepper({
+  value,
+  onChange,
+  max,
+  label,
+}: {
+  value: number;
+  onChange: (n: number) => void;
+  max: number;
+  label: string;
+}) {
+  const t = useT();
+  return (
+    <div
+      role="group"
+      aria-label={label}
+      className="inline-flex h-11 items-center gap-3 rounded-full border border-border"
+    >
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="rounded-full"
+        aria-label={t("cart.decrease", { label })}
+        disabled={value <= 1}
+        onClick={() => onChange(value - 1)}
+      >
+        <Minus />
+      </Button>
+      <output className="min-w-6 text-center font-mono">{value}</output>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        className="rounded-full"
+        aria-label={t("cart.increase", { label })}
+        disabled={value >= max}
+        onClick={() => onChange(value + 1)}
+      >
+        <Plus />
+      </Button>
+    </div>
+  );
+}

@@ -1,0 +1,341 @@
+import { useState } from "react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { Dialog, DialogPortal } from "@/components/ui/dialog";
+import { Link } from "@tanstack/react-router";
+import { X, Mail, ShoppingBag } from "lucide-react";
+import { useLang, useT } from "@/i18n";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/lib/cart";
+import { usePrices } from "@/lib/use-prices";
+import {
+  answersSchema,
+  encodeOrder,
+  firstUnanswered,
+  priceCart,
+  type DraftAnswers,
+  type OrderRecord,
+} from "@/lib/cart-pricing";
+import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
+import { formatForMessage } from "@/lib/currency";
+import { CartLines, lineDescription } from "./CartLines";
+import { Option, Question } from "./Option";
+import { WhatsAppIcon } from "./WhatsAppIcon";
+export function CartPage() {
+  const t = useT(),
+    lang = useLang();
+  const cart = useCart();
+  const prices = usePrices();
+  const { products, optionGroups, factor, fmt, cur, rates, settings } = prices;
+  const [answers, setAnswers] = useState<DraftAnswers>({});
+  const [highlight, setHighlight] = useState<string>();
+  const [error, setError] = useState(false);
+  const [order, setOrder] = useState<OrderRecord | null>(null);
+  const priced = priceCart(cart.items, products, optionGroups, factor);
+  const complete = answersSchema.safeParse(answers).success;
+  const set = (key: keyof DraftAnswers, value: unknown) => {
+    setAnswers((a) => ({ ...a, [key]: value }));
+    setHighlight(undefined);
+    setError(false);
+  };
+  const create = () => {
+    const missing = firstUnanswered(answers);
+    if (missing) {
+      setError(true);
+      setHighlight(missing);
+      document
+        .getElementById(`order-${missing}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    const valid = answersSchema.safeParse(answers);
+    if (!valid.success || priced.invalid || !cart.items.length) return;
+    const next: OrderRecord = {
+      version: 1,
+      id: newOrderId(),
+      date: new Date().toISOString(),
+      lang,
+      items: cart.items.map((l) => ({ ...l, options: { ...l.options } })),
+      answers: valid.data,
+      factor,
+      total: priced.total,
+      estimated: priced.estimated,
+    };
+    setOrder(next);
+    track("create_order_click", { order_id: next.id });
+  };
+  const orderPrices = order ? priceCart(order.items, products, optionGroups, order.factor) : priced;
+  const checkUrl = order
+    ? `${typeof window !== "undefined" ? window.location.origin : ""}/check?o=${encodeOrder(order)}`
+    : "";
+  const message = order
+    ? [
+        t("msg.order"),
+        `${t("msg.orderNew")} #${order.id}`,
+        ...orderPrices.lines.map(
+          (l) =>
+            `${l.item.quantity * l.item.teeth}× ${lang === "tr" ? l.product?.name_tr : l.product?.name} (${lineDescription(l.item, optionGroups, lang)})${l.product?.per_tooth ? ` – ${t(l.product.placement === "gap" ? "cart.gaps" : "cart.teeth", { n: l.item.teeth * l.item.quantity })}` : ""}${l.savings > 0 ? ` (−%${l.product?.extra_piece_discount})` : ""}${l.product?.section === "custom" ? ` [${t("cart.estimate")}]` : ""} – ${formatForMessage(l.total, cur, lang, rates)}`,
+        ),
+        `${t("order.scan")}: ${t(`order.scan.${order.answers.scan}`)}`,
+        `${t("order.delivery")}: ${t(`order.delivery.${order.answers.delivery}`)}`,
+        `${t("order.payment")}: ${t("order.cashAdvance")}`,
+        `${t("msg.total")}: ${formatForMessage(orderPrices.total, cur, lang, rates)}`,
+        ...(orderPrices.estimated
+          ? [`${t("cart.estimated")}: ${formatForMessage(orderPrices.estimated, cur, lang, rates)}`]
+          : []),
+        ...(cur !== "TRY" ? [t("price.approx")] : []),
+        `${t("check.link")}: ${checkUrl}`,
+      ].join("\n")
+    : "";
+  const send = () => {
+    if (!order) return;
+    sendToCrm({
+      order_id: order.id,
+      source: "Website cart",
+      language: lang.toUpperCase(),
+      items: order.items,
+      scan: order.answers.scan,
+      delivery: order.answers.delivery,
+      payment: "Cash in advance",
+      estimated_price: orderPrices.total,
+      custom_estimated_price: orderPrices.estimated,
+      price_factor: order.factor,
+      usd_try: rates.usd_try,
+      currency: cur,
+      check_link: checkUrl,
+      status: "1 – Order created on website",
+    });
+    track("whatsapp_send_click", { order_id: order.id });
+  };
+  const steps = order
+    ? [
+        ...(order.answers.scan === "istanbul"
+          ? ["clinicBook", "clinicScan"]
+          : order.answers.scan === "city"
+            ? ["cityCall", "cityScan"]
+            : ["stlSend"]),
+        "design",
+        order.answers.delivery === "pickup" ? "pickup" : "shipping",
+      ]
+    : [];
+  return (
+    <main className="mx-auto max-w-3xl px-4 py-8">
+      <h1 className="text-4xl md:text-6xl">{t("cart.title")}</h1>
+      {!cart.items.length ? (
+        <div className="py-16 text-center">
+          <ShoppingBag className="mx-auto mb-6 h-10 w-10 text-helper" />
+          <p>{t("cart.empty")}</p>
+          <Button asChild variant="outline" className="mt-6 rounded-full">
+            <Link to={lang === "tr" ? "/$lang/katalog" : "/$lang/catalog"} params={{ lang }}>
+              {t("nav.catalog")}
+            </Link>
+          </Button>
+        </div>
+      ) : (
+        <>
+          <CartLines
+            priced={priced}
+            groups={optionGroups}
+            fmt={fmt}
+            quantity={cart.quantity}
+            remove={cart.remove}
+          />
+          <div className="border-y border-border py-6">
+            <div className="flex justify-between font-mono text-lg">
+              <span>{t("product.total")}</span>
+              <span>{fmt(priced.total)}</span>
+            </div>
+            {priced.estimated > 0 && (
+              <div className="mt-3 flex justify-between font-mono text-primary">
+                <span>{t("cart.estimated")}</span>
+                <span>{fmt(priced.estimated)}</span>
+              </div>
+            )}
+            {priced.savings > 0 && (
+              <p className="mt-3 text-success">{t("product.save", { x: fmt(priced.savings) })}</p>
+            )}
+            <p className="helper mt-3">{t("cart.samePerson")}</p>
+            {cur !== "TRY" && <p className="helper mt-2">{t("price.approx")}</p>}
+            {priced.invalid && <p className="mt-3 text-destructive">{t("check.invalidOptions")}</p>}
+          </div>
+          <Question id="order-scan" title={t("order.scan")} highlight={highlight === "scan"}>
+            <p>{t("order.scanIntro")}</p>
+            <p className="helper mt-2">{t("order.tenMinutes")}</p>
+            <p className="my-4">{t("order.scanQuestion")}</p>
+            <div role="radiogroup" aria-label={t("order.scan")} className="space-y-2">
+              {(["istanbul", "city", "stl"] as const).map((v) => (
+                <Option
+                  key={v}
+                  selected={answers.scan === v}
+                  onSelect={() => set("scan", v)}
+                  label={t(`order.scan.${v}`)}
+                  note={v === "stl" ? t("order.stlNote") : undefined}
+                />
+              ))}
+            </div>
+          </Question>
+          <Question
+            id="order-delivery"
+            title={t("order.delivery")}
+            highlight={highlight === "delivery"}
+          >
+            <p>{t("order.deliveryQuestion")}</p>
+            <p className="helper mb-4 mt-2">{t("order.changeLater")}</p>
+            <div role="radiogroup" aria-label={t("order.delivery")} className="space-y-2">
+              {(["pickup", "shipping"] as const).map((v) => (
+                <Option
+                  key={v}
+                  selected={answers.delivery === v}
+                  onSelect={() => set("delivery", v)}
+                  label={t(`order.delivery.${v}`)}
+                  note={v === "shipping" ? t("order.shippingNote") : undefined}
+                />
+              ))}
+            </div>
+            <p className="mt-5 border-l-2 border-primary pl-4">{t("order.duration")}</p>
+          </Question>
+          <Question
+            id="order-payment"
+            title={t("order.payment")}
+            highlight={highlight === "payment"}
+          >
+            <p className="mb-4">{t("order.paymentQuestion")}</p>
+            <Option
+              type="check"
+              selected={answers.payment === true}
+              onSelect={() => set("payment", !answers.payment)}
+              label={t("order.cash")}
+              note={t("order.cashNote")}
+            />
+          </Question>
+          <div
+            id="order-adult"
+            className={`mb-3 scroll-mt-24 ${highlight === "adult" ? "outline outline-2 outline-primary" : ""}`}
+          >
+            <Option
+              type="check"
+              selected={answers.adult === true}
+              onSelect={() => set("adult", !answers.adult)}
+              label={t("order.adult")}
+            />
+          </div>
+          <div
+            id="order-privacy"
+            className={`scroll-mt-24 ${highlight === "privacy" ? "outline outline-2 outline-primary" : ""}`}
+          >
+            <Option
+              type="check"
+              selected={answers.privacy === true}
+              onSelect={() => set("privacy", !answers.privacy)}
+              label={t("order.privacy")}
+            />
+            <Link
+              to={lang === "tr" ? "/$lang/gizlilik" : "/$lang/privacy"}
+              params={{ lang }}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block text-sm text-helper underline"
+            >
+              {t("footer.privacy")}
+            </Link>
+          </div>
+          {error && (
+            <p role="alert" className="mt-5 text-primary">
+              {t("order.answerAll")}
+            </p>
+          )}
+          <Button
+            className={`mt-8 h-auto min-h-12 w-full whitespace-normal rounded-full py-3 ${complete ? "bg-success text-success-foreground hover:bg-success/90" : "bg-muted text-muted-foreground hover:bg-muted"}`}
+            onClick={create}
+            disabled={priced.invalid}
+          >
+            {t("cta.create")}
+          </Button>
+        </>
+      )}
+      <Dialog
+        open={!!order}
+        onOpenChange={(open) => {
+          if (!open) setOrder(null);
+        }}
+      >
+        {order && (
+          <DialogPortal>
+            <DialogPrimitive.Content
+              aria-describedby={undefined}
+              className="fixed inset-0 z-50 overflow-y-auto bg-background"
+            >
+              <div className="mx-auto max-w-3xl px-4 py-6">
+                <div className="flex items-center justify-between">
+                  <p className="label-xs">#{order.id}</p>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t("cart.close")}
+                    onClick={() => setOrder(null)}
+                    autoFocus
+                  >
+                    <X />
+                  </Button>
+                </div>
+                <DialogPrimitive.Title className="mt-6 text-3xl">
+                  {t("order.nextTitle")}
+                </DialogPrimitive.Title>
+                <CartLines priced={orderPrices} groups={optionGroups} fmt={fmt} />
+                <div className="flex justify-between border-y border-border py-5 font-mono">
+                  <span>{t("product.total")}</span>
+                  <span>{fmt(orderPrices.total)}</span>
+                </div>
+                {orderPrices.estimated > 0 && (
+                  <p className="mt-3 font-mono text-primary">
+                    {t("cart.estimated")}: {fmt(orderPrices.estimated)}
+                  </p>
+                )}
+                {cur !== "TRY" && <p className="helper mt-2">{t("price.approx")}</p>}
+                <ol className="my-8">
+                  {steps.map((s, i) => (
+                    <li key={s} className="relative flex gap-4 pb-8 last:pb-0">
+                      <span
+                        className={`relative z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full font-mono ${i === steps.length - 1 ? "bg-success text-success-foreground" : "bg-primary text-primary-foreground"}`}
+                      >
+                        {i + 1}
+                      </span>
+                      {i < steps.length - 1 && (
+                        <span className="absolute bottom-0 left-4 top-9 w-px bg-border" />
+                      )}
+                      <div className="pt-1">
+                        <p>{t(`roadmap.${s}`)}</p>
+                        {(s === "cityScan" || s === "stlSend") && settings.scan_email && (
+                          <a
+                            className="mt-3 inline-flex items-center gap-2 break-all text-primary"
+                            href={`mailto:${settings.scan_email}?subject=${encodeURIComponent(`STL #${order.id}`)}`}
+                          >
+                            <Mail className="h-4 w-4 shrink-0" />
+                            {settings.scan_email}
+                          </a>
+                        )}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                <Button
+                  asChild
+                  className="h-auto min-h-12 w-full whitespace-normal rounded-full bg-success py-3 text-success-foreground hover:bg-success/90"
+                >
+                  <a
+                    href={waLink(settings.whatsapp_number, message)}
+                    target="_blank"
+                    rel="noreferrer"
+                    onClick={send}
+                  >
+                    <WhatsAppIcon />
+                    {t("order.send")}
+                  </a>
+                </Button>
+              </div>
+            </DialogPrimitive.Content>
+          </DialogPortal>
+        )}
+      </Dialog>
+    </main>
+  );
+}
