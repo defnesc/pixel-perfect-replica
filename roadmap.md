@@ -6,8 +6,9 @@
 - [x] Preserve metadata, order-time CRM factor and estimator pricing helper for the next step.
 
 # Cart and order flow
-- [ ] Implement shared per-product multi-piece and per-tooth pricing with concrete rule tests.
-- [ ] Add safe local cart, header count, product actions and linked add-on lines.
-- [ ] Add bilingual cart questions, validation and full-screen next steps.
-- [ ] Create WhatsApp/CRM order payloads and encoded bilingual noindex check pages.
-- [ ] Verify cart, teeth/bar prices, questions and check-link flow on mobile and desktop.
+- [x] Implement shared per-product multi-piece and per-tooth pricing with concrete rule tests.
+- [x] Add safe local cart, header count, product actions and linked add-on lines.
+- [x] Add bilingual cart questions, validation and full-screen next steps.
+- [x] Create WhatsApp/CRM order payloads and encoded bilingual noindex check pages.
+- [x] Verify cart, teeth/bar prices, questions and check-link flow on mobile and desktop.
+- [ ] Verify delivery to CRM: blocked until VITE_CRM_WEBHOOK_URL is supplied. Payload fields are implemented.
