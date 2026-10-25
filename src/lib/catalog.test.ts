@@ -3,9 +3,9 @@ import { discountedPrice, findProduct, formatTl, groupOf, piecePrice } from "./c
 
 describe("catalog pricing", () => {
   it("30% off rounds down to nearest 100 then +90", () => {
-    expect(discountedPrice(4990,30)).toBe(3490);
-    expect(discountedPrice(6490,30)).toBe(4590);
-    expect(discountedPrice(6990,30)).toBe(4890);
+    expect(discountedPrice(4990, 30)).toBe(3490);
+    expect(discountedPrice(6490, 30)).toBe(4590);
+    expect(discountedPrice(6990, 30)).toBe(4890);
   });
   it("piece price adds option surcharges", () => {
     const frame = findProduct("frame")!;

@@ -12,7 +12,15 @@ export const Route = createFileRoute("/$lang")({
   },
   loader: ({ context }) => context.queryClient.ensureQueryData(sheetQuery),
   head: ({ params }) => ({
-    meta: [{ name: "keywords", content: params.lang === "tr" ? "Grillz İstanbul, altın grillz, özel grillz" : "Grillz Istanbul, gold grillz, custom grillz" }],
+    meta: [
+      {
+        name: "keywords",
+        content:
+          params.lang === "tr"
+            ? "Grillz İstanbul, altın grillz, özel grillz"
+            : "Grillz Istanbul, gold grillz, custom grillz",
+      },
+    ],
   }),
   component: LangLayout,
 });
@@ -24,11 +32,13 @@ function LangLayout() {
     document.documentElement.lang = lang;
   }, [lang]);
   return (
-    <CartProvider><div className="min-h-screen">
-      <Header />
-      <Outlet />
-      <Footer />
-      <Toaster theme="dark" position="top-center" />
-    </div></CartProvider>
+    <CartProvider>
+      <div className="min-h-screen">
+        <Header />
+        <Outlet />
+        <Footer />
+        <Toaster theme="dark" position="top-center" />
+      </div>
+    </CartProvider>
   );
 }
