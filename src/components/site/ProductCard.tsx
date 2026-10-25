@@ -1,11 +1,12 @@
 import { Link } from "@tanstack/react-router";
 import { useLang, useT } from "@/i18n";
+import { usePrices } from "@/lib/use-prices";
 import { photoUrl, type CatalogProduct } from "@/lib/catalog";
 
 /** Catalog card: photo (hover swap), name, badge pill, price. */
 export function ProductCard({ p, priceText }: { p: CatalogProduct; priceText: string }) {
   const lang = useLang();
-  const t = useT();
+  const { fmt, adjusted } = usePrices();
   const name = lang === "tr" ? p.name_tr : p.name;
   const badge = lang === "tr" ? p.badge_tr : p.badge;
   const main = photoUrl(p.main_image);
@@ -23,7 +24,7 @@ export function ProductCard({ p, priceText }: { p: CatalogProduct; priceText: st
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/90 to-transparent px-3.5 pb-3.5 pt-16 leading-snug">
           <div className="text-[15px] font-semibold normal-case tracking-normal">{name}</div>
           <div className="mt-1 font-mono text-[13px] uppercase tracking-[0.04em]">
-            {p.compare_at_price && <span className="mr-2 text-helper line-through">{new Intl.NumberFormat("tr-TR").format(p.compare_at_price)} TL</span>}
+            {p.compare_at_price && <span className="mr-2 text-helper line-through">{fmt(adjusted(p.compare_at_price))}</span>}
             {priceText}
           </div>
         </div>
