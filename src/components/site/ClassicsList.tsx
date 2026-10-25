@@ -3,7 +3,7 @@ import { classics, formatTl } from "@/lib/catalog";
 import { ProductCard } from "./ProductCard";
 import { BackButton } from "./BackButton";
 
-const HAS_OPTIONS = ["stones", "stones_cherub", "bar", "bar_cutout"];
+const HAS_OPTIONS = ["stones", "stones_cherub", "stones_dragon", "bar", "bar_cutout"];
 
 /** Classics list in CSV sort_order — deliberate, do not re-sort. */
 export function ClassicsList() {

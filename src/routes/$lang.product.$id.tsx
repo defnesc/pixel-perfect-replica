@@ -4,7 +4,7 @@ import { useState } from "react";
 import { translate, useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
 import { ADDONS, findProduct, formatTl, groupOf, orderTotals, photoUrl, piecePrice, productPhotos, type CatalogProduct } from "@/lib/catalog";
-import { formatForMessage, formatPrice, useCurrency } from "@/lib/currency";
+import { formatForMessage, formatPrice, useCurrency, useLiveRates } from "@/lib/currency";
 import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
 import { Faq } from "@/components/site/Faq";
@@ -49,8 +49,9 @@ function ProductPage() {
 function useFmt(lang: Lang) {
   const { data } = useSuspenseQuery(sheetQuery);
   const cur = useCurrency();
-  const fmt = (n: number) => (cur === "TRY" ? formatTl(n) : formatPrice(n, cur, lang, data.settings, data.settings.currency_symbol));
-  return { fmt, cur, settings: data.settings };
+  const rates = useLiveRates(data.settings);
+  const fmt = (n: number) => (cur === "TRY" ? formatTl(n) : formatPrice(n, cur, lang, rates, data.settings.currency_symbol));
+  return { fmt, cur, settings: data.settings, rates };
 }
 
 function Gallery({ product, name }: { product: CatalogProduct; name: string }) {
@@ -78,13 +79,13 @@ function Gallery({ product, name }: { product: CatalogProduct; name: string }) {
 
 function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) {
   const t = useT();
-  const { fmt, cur, settings } = useFmt(lang);
+  const { fmt, cur, settings, rates } = useFmt(lang);
   const name = lang === "tr" ? product.name_tr : product.name;
   const badge = lang === "tr" ? product.badge_tr : product.badge;
 
   const colour = groupOf(product, "colour")!;
   const bar = groupOf(product, "bar") ?? groupOf(product, "bar_cutout");
-  const stones = groupOf(product, "stones") ?? groupOf(product, "stones_cherub");
+  const stones = groupOf(product, "stones") ?? groupOf(product, "stones_cherub") ?? groupOf(product, "stones_dragon");
 
   const [colourIdx, setColourIdx] = useState(0);
   const [barIdx, setBarIdx] = useState(0);
@@ -106,10 +107,16 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
       return n;
     });
 
+  const stonesNote = stones
+    ? (lang === "tr"
+        ? stones.options[stonesIdx]?.small_note_tr || stones.options.find((o) => o.small_note_tr)?.small_note_tr
+        : stones.options[stonesIdx]?.small_note || stones.options.find((o) => o.small_note)?.small_note) || ""
+    : "";
+
   const orderHref = () => {
     const parts = [`${name} (${[colourName, bar && barIdx > 0 ? optLabel(bar, barIdx) : "", stones && stonesIdx > 0 ? optLabel(stones, stonesIdx) : ""].filter(Boolean).join(", ")})`];
     for (const a of addons) parts.push(`${lang === "tr" ? a.name_tr : a.name} (${t("msg.addonOff")})`);
-    return waLink(settings.whatsapp_number, `${t("msg.order")} ${parts.join(" + ")}. ${t("msg.total")}: ${formatForMessage(total, cur, lang, settings)}`);
+    return waLink(settings.whatsapp_number, `${t("msg.order")} ${parts.join(" + ")}. ${t("msg.total")}: ${formatForMessage(total, cur, lang, rates)}`);
   };
 
   const onOrder = () => {
@@ -138,6 +145,9 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
           {product.compare_at_price && <span className="mr-2 text-helper line-through">{fmt(product.compare_at_price)}</span>}
           {fmt(piece)}
         </p>
+        {product.folder === "classic-cap-and-frame-duo" && product.compare_at_price && (
+          <p className="helper mt-1">{t("product.duoSave", { x: fmt(product.compare_at_price - product.price) })}</p>
+        )}
         <p className="helper mt-1">{t("product.material")}</p>
 
         <Question id="q-colour" title={t("product.colour")}>
@@ -168,7 +178,7 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
                 <Option key={o.option} selected={stonesIdx === i} onSelect={() => setStonesIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(o.price_add_tl)}` : undefined} />
               ))}
             </div>
-            <p className="helper mt-3">{t("product.stonesNote")}</p>
+            {stonesNote && <p className="helper mt-3">{stonesNote}</p>}
           </Question>
         )}
 
@@ -199,6 +209,7 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
             <span className="font-mono text-lg uppercase tracking-[0.04em]">{fmt(total)}</span>
           </div>
           {savings > 0 && <p className="mt-1 text-right font-mono text-[13px] uppercase tracking-[0.04em] text-success">{t("product.save", { x: fmt(savings) })}</p>}
+          {cur !== "TRY" && <p className="mt-1 text-right text-[12px] text-helper">{t("price.approx")}</p>}
           <a href={orderHref()} target="_blank" rel="noreferrer" onClick={onOrder} className="btn mt-4 w-full bg-success text-success-foreground">
             <WhatsAppIcon /> {t("cta.order")}
           </a>

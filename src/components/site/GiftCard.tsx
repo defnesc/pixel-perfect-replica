@@ -2,7 +2,7 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { translate, useLang, useT } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { convertToTry, CURRENCY_SYMBOL, formatForMessage, formatPrice, useCurrency } from "@/lib/currency";
+import { convertToTry, CURRENCY_SYMBOL, formatForMessage, formatPrice, useCurrency, useLiveRates } from "@/lib/currency";
 import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
 import giftImg from "@/assets/gift-card.jpg";
@@ -15,7 +15,7 @@ export function GiftCardPage() {
   const t = useT();
   const cur = useCurrency();
   const { data } = useSuspenseQuery(sheetQuery);
-  const rates = data.settings;
+  const rates = useLiveRates(data.settings);
   const [choice, setChoice] = useState<string>(String(GIFT_AMOUNTS[0]));
   const [custom, setCustom] = useState("");
   const [qty, setQty] = useState(1);
@@ -75,6 +75,7 @@ export function GiftCardPage() {
         </div>
 
         {qty > 1 && unitTry && <p className="mt-4 font-mono text-[13px] uppercase">{t("gift.total")}: {fmt(unitTry * qty)}</p>}
+        {cur !== "TRY" && unitTry && <p className="mt-2 text-[12px] text-helper">{t("price.approx")}</p>}
 
         <a href="#" target="_blank" rel="noreferrer" onClick={send} className="btn mt-8 w-full bg-primary text-primary-foreground">
           <WhatsAppIcon /> {t("cta.create")}

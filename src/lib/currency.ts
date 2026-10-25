@@ -6,10 +6,10 @@ export const CURRENCIES: Currency[] = ["TRY", "EUR", "USD"];
 export const CURRENCY_SYMBOL: Record<Currency, string> = { TRY: "₺", EUR: "€", USD: "$" };
 export interface Rates { usd_try: number; eur_try: number }
 
-/** Show a TRY amount in another currency, rounded to whole units. TRY is the base. */
+/** Show a TRY amount in another currency. USD/EUR round UP to the nearest 5; TRY stays exact. */
 export function convertFromTry(tryAmount: number, cur: Currency, rates: Rates): number {
-  if (cur === "USD") return Math.round(tryAmount / rates.usd_try);
-  if (cur === "EUR") return Math.round(tryAmount / rates.eur_try);
+  if (cur === "USD") return Math.ceil(tryAmount / rates.usd_try / 5) * 5;
+  if (cur === "EUR") return Math.ceil(tryAmount / rates.eur_try / 5) * 5;
   return Math.round(tryAmount);
 }
 
@@ -25,10 +25,71 @@ export function formatPrice(tryAmount: number, cur: Currency, lang: "en" | "tr",
   return CURRENCY_SYMBOL[cur] + new Intl.NumberFormat(lang === "tr" ? "tr-TR" : "en-US").format(convertFromTry(tryAmount, cur, rates));
 }
 
-/** Price text for order messages: chosen currency plus the TRY amount. */
+/** Price text for order messages: chosen currency plus the TRY amount. The TL amount is the real price. */
 export function formatForMessage(tryAmount: number, cur: Currency, lang: "en" | "tr", rates: Rates) {
   const tl = formatTry(tryAmount, lang);
   return cur === "TRY" ? tl : `${formatPrice(tryAmount, cur, lang, rates)} (${tl})`;
+}
+
+// ---- live exchange rates (frankfurter → er-api → sheet/seed fallback), cached 12 h ----
+const RATES_KEY = "333-rates";
+const RATES_TTL = 12 * 60 * 60 * 1000;
+let liveRates: Rates | null = null;
+const rateSubs = new Set<() => void>();
+let fetching = false;
+
+function setLiveRates(r: Rates) {
+  liveRates = r;
+  rateSubs.forEach((f) => f());
+}
+
+async function fetchLiveRates() {
+  try {
+    const res = await fetch("https://api.frankfurter.app/latest?from=TRY&to=USD,EUR");
+    if (!res.ok) throw new Error(String(res.status));
+    const j = (await res.json()) as { rates?: { USD?: number; EUR?: number } };
+    if (j.rates?.USD && j.rates?.EUR) return { usd_try: 1 / j.rates.USD, eur_try: 1 / j.rates.EUR };
+    throw new Error("bad payload");
+  } catch {
+    const res = await fetch("https://open.er-api.com/v6/latest/TRY");
+    if (!res.ok) throw new Error(String(res.status));
+    const j = (await res.json()) as { rates?: { USD?: number; EUR?: number } };
+    if (j.rates?.USD && j.rates?.EUR) return { usd_try: 1 / j.rates.USD, eur_try: 1 / j.rates.EUR };
+    throw new Error("bad payload");
+  }
+}
+
+function ensureLiveRates() {
+  if (fetching || liveRates) return;
+  try {
+    const raw = window.localStorage.getItem(RATES_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw) as { usd_try?: number; eur_try?: number; ts?: number };
+      if (saved.usd_try && saved.eur_try && saved.ts && Date.now() - saved.ts < RATES_TTL) {
+        liveRates = { usd_try: saved.usd_try, eur_try: saved.eur_try };
+        return;
+      }
+    }
+  } catch { /* ignore */ }
+  fetching = true;
+  fetchLiveRates()
+    .then((r) => {
+      try { window.localStorage.setItem(RATES_KEY, JSON.stringify({ ...r, ts: Date.now() })); } catch { /* ignore */ }
+      setLiveRates(r);
+    })
+    .catch(() => { /* keep sheet/seed fallback */ })
+    .finally(() => { fetching = false; });
+}
+
+/** Live rates when available, otherwise the sheet/seed fallback passed in. */
+export function useLiveRates(fallback: Rates): Rates {
+  const live = useSyncExternalStore(
+    (f) => { rateSubs.add(f); return () => rateSubs.delete(f); },
+    () => liveRates,
+    () => null,
+  );
+  useEffect(() => { ensureLiveRates(); }, []);
+  return live ?? fallback;
 }
 
 // ---- chosen currency store (remembered in the browser, safe when storage is blocked) ----

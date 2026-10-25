@@ -1,13 +1,13 @@
 folder,name,name_tr,section,sort_order,photos,main_image,hover_image,price,compare_at_price,price_type,price_note,price_note_tr,badge,badge_tr,option_groups,addons,notes
-classic-cap,Classic Cap,Klasik kaplama,classics,1,5,classic-cap-01.jpg,classic-cap-02.jpg,4490,,fixed,,,,,colour;bar,classic_addons,Price shown = without stones/bar (lowest option)
-frame,Frame,Çerçeve,classics,2,7,frame-01.jpg,frame-02.jpg,4490,,fixed,,,,,colour;bar,classic_addons,Price shown = without stones/bar (lowest option)
+classic-cap,Classic Cap,Klasik kaplama,classics,1,5,classic-cap-01.jpg,classic-cap-02.jpg,4990,,fixed,,,,,colour;bar,classic_addons,Price shown = without stones/bar (lowest option)
+frame,Frame,Çerçeve,classics,2,7,frame-01.jpg,frame-02.jpg,4990,,fixed,,,,,colour;bar,classic_addons,Price shown = without stones/bar (lowest option)
 star,Star,Yıldız,classics,3,4,star-01.jpg,star-02.jpg,7490,8700,fixed,,,Bestseller,Çok satan,colour,classic_addons,
 iced-cap-bar,Iced out cap with bar,Iced out ve bar,classics,4,3,iced-cap-bar-01.jpg,iced-cap-bar-02.jpg,12990,,fixed,,,Signature,Signature,colour,classic_addons,
-gap-filler,Gap filler,Diş arası,classics,5,2,gap-filler-01.jpg,gap-filler-02.jpg,4490,,fixed,,,,,colour;stones,classic_addons,Price shown = without stones/bar (lowest option)
-frame-with-sparkle,Frame with sparkle,Işıltı ve çerçeve,classics,6,4,frame-with-sparkle-01.jpg,frame-with-sparkle-02.jpg,5490,,fixed,,,,,colour;stones,classic_addons,Price shown = without stones/bar (lowest option)
-cut-out-heart-iced-bar,Cut out heart,Kalp pencere,classics,7,1,cut-out-heart-iced-bar-01.jpg,,5490,,fixed,,,,,colour;bar_cutout,classic_addons,Price shown = without stones/bar (lowest option)
-frame-with-bar,Frame with bar,Çerçeve ve bar,classics,8,2,frame-with-bar-01.jpg,frame-with-bar-02.jpg,5990,,fixed,,,,,colour,classic_addons,
-star-inside-frame,Star inside frame,Çerçeve içinde yıldız,classics,9,3,star-inside-frame-01.jpg,star-inside-frame-02.jpg,5990,,fixed,,,,,colour,classic_addons,
+gap-filler,Gap filler,Diş arası,classics,5,2,gap-filler-01.jpg,gap-filler-02.jpg,4990,,fixed,,,,,colour;stones,classic_addons,Price shown = without stones/bar (lowest option)
+frame-with-sparkle,Frame with sparkle,Işıltı ve çerçeve,classics,6,4,frame-with-sparkle-01.jpg,frame-with-sparkle-02.jpg,5990,,fixed,,,,,colour;stones,classic_addons,Price shown = without stones/bar (lowest option)
+cut-out-heart-iced-bar,Cut out heart,Kalp pencere,classics,7,1,cut-out-heart-iced-bar-01.jpg,,5990,,fixed,,,,,colour;bar_cutout,classic_addons,Price shown = without stones/bar (lowest option)
+star-inside-frame,Star inside frame,Çerçeve içinde yıldız,classics,8,3,star-inside-frame-01.jpg,star-inside-frame-02.jpg,5990,,fixed,,,,,colour,classic_addons,
+frame-with-bar,Frame with bar,Çerçeve ve bar,classics,9,2,frame-with-bar-01.jpg,frame-with-bar-02.jpg,6490,,fixed,,,,,colour,classic_addons,
 sun,Sun,Güneş,classics,10,2,sun-01.jpg,sun-02.jpg,6490,,fixed,,,,,colour,classic_addons,
 bow,Bow,Fiyonk,classics,11,3,bow-01.jpg,bow-02.jpg,6490,,fixed,,,,,colour;stones,classic_addons,Price shown = without stones/bar (lowest option)
 heart-with-gems,Heart,Kalp,classics,12,1,heart-with-gems-01.jpg,,6490,,fixed,,,,,colour;stones,classic_addons,Price shown = without stones/bar (lowest option)
@@ -18,8 +18,8 @@ cherub,Cherub,Melek,classics,16,4,cherub-01.jpg,cherub-02.jpg,6990,,fixed,,,,,co
 scorpion,Scorpion,Akrep,classics,17,2,scorpion-01.jpg,scorpion-02.jpg,7490,,fixed,,,,,colour,classic_addons,
 swirl-and-sparkle,Swirl and sparkle,Girdap ve ışıltı,classics,18,1,swirl-and-sparkle-01.jpg,,7490,,fixed,,,,,colour;stones,classic_addons,Price shown = without stones/bar (lowest option)
 fangs,Fangs,Vampir diş,classics,19,2,fangs-01.jpg,fangs-02.jpg,7490,,fixed,,,,,colour,classic_addons,
-classic-cap-and-frame-duo,Classic Cap + frame duo,Klasik kaplama + çerçeve ikili,classics,20,2,classic-cap-and-frame-duo-01.jpg,classic-cap-and-frame-duo-02.jpg,7690,,fixed,,,Duo deal,İkili fırsat,colour,classic_addons,
-dragon,Dragon,Ejderha,classics,21,2,dragon-01.jpg,dragon-02.jpg,9490,,fixed,,,,,colour,classic_addons,
+classic-cap-and-frame-duo,Classic Cap + frame duo,Klasik kaplama + çerçeve ikili,classics,20,2,classic-cap-and-frame-duo-01.jpg,classic-cap-and-frame-duo-02.jpg,7990,9980,fixed,,,Duo deal,İkili fırsat,colour,classic_addons,
+dragon,Dragon,Ejderha,classics,21,2,dragon-01.jpg,dragon-02.jpg,8490,,fixed,,,,,colour;stones_dragon,classic_addons,Price shown = without stones (lowest option)
 letter,Letter,Harf,custom,1,1,letter-01.jpg,,6490,,estimate,per letter,harf başına,,,colour,,
 engraved-symbol,Engraved symbol,Sembol kazıma,custom,2,2,engraved-symbol-01.jpg,engraved-symbol-02.jpg,6990,,estimate,,,,,colour,,
 letter-engraved,Letter engraved,Lazer harf kazıma,custom,3,1,letter-engraved-01.jpg,,6990,,estimate,,,,,colour,,
