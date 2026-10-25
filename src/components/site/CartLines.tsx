@@ -18,7 +18,7 @@ export function lineDescription(
 ) {
   return [
     lang === "tr" ? (item.colour === "White" ? "Beyaz" : "Sarı") : item.colour,
-    ...(item.estimate ? [translate(lang, `estimator.jaw.${item.estimate.jaw}`), ...[item.estimate.style, item.estimate.stones].map((v) => translate(lang, `estimator.option.${v}`)), `${translate(lang, "estimator.engraving")}: ${translate(lang, `estimator.option.${item.estimate.engraving}`)}`] : []),
+    ...(item.estimate ? [item.estimate.style, item.estimate.stones, item.estimate.engraving].map((v) => translate(lang, `estimator.option.${v}`)) : []),
     ...Object.entries(item.options).flatMap(([id, name]) => {
       const o = groups.find((g) => g.group_id === id)?.options.find((o) => o.option === name);
       return o && !o.isDefault ? [lang === "tr" ? o.option_tr : o.option] : [];
