@@ -48,8 +48,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     </CartContext.Provider>
   );
 }
+const EMPTY_CART: CartContextValue = {
+  items: [],
+  add: () => {},
+  remove: () => {},
+  quantity: () => {},
+  ready: false,
+};
+/** Falls back to an empty cart (e.g. during hot reloads) instead of blanking the page. */
 export function useCart() {
-  const value = useContext(CartContext);
-  if (!value) throw new Error("CartProvider required");
-  return value;
+  return useContext(CartContext) ?? EMPTY_CART;
 }
