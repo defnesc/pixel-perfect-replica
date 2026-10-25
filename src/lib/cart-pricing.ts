@@ -15,11 +15,11 @@ export const cartLineSchema = z.object({
   colour: z.enum(["White", "Yellow"]),
   options: z.record(z.string().max(100)).refine((v) => Object.keys(v).length <= 8),
   quantity: z.number().int().min(1).max(10),
-  teeth: z.number().int().min(1).max(8),
+  teeth: z.number().int().min(1).max(16),
   addonOf: z.string().min(1).max(100).optional(),
   kind: z.enum(["catalog", "estimate"]).optional(),
   estimate: z.object({
-    jaw: z.enum(["Upper", "Lower", "Both"]),
+    jaw: z.enum(["Upper", "Lower", "Both"]).optional(),
     style: z.string().min(1).max(100),
     stones: z.string().min(1).max(100),
     engraving: z.string().min(1).max(100),
@@ -125,7 +125,7 @@ export function priceCart(
   products: CatalogProduct[],
   groups: OptionGroup[],
   factor: number,
-  estimator: { group: string; option: string; price_add_tl: number }[] = [],
+  estimator: { group: string; option: string; price_add_tl: number; note?: string }[] = [],
 ) {
   const lines = items.map((item) => {
     if (item.kind === "estimate") {
