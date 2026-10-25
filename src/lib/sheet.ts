@@ -33,7 +33,7 @@ export const BUILTIN: SheetData = { products: PRODUCTS, optionGroups: OPTION_GRO
 
 /** Restore invalid rows by identity; valid omissions in the sheet remain omissions. */
 export function safeRows(rows: Row[], backup: Row[], identity: (r: Row) => string, valid: (r: Row) => boolean, tabName: string): Row[] {
-  if (!rows.length) return backup;
+  if (!rows.length || rows.every(r => !identity(r) || identity(r) === "undefined/undefined")) return backup;
   return rows.flatMap(row => {
     if (valid(row)) return [row];
     console.warn(`Invalid price in ${tabName}: ${identity(row)}; using backup row`);
@@ -62,9 +62,9 @@ async function tab(name: string): Promise<Row[]> {
 export async function loadSheet(): Promise<SheetData> {
   const [products = [], options = [], addons = [], settings = [], estimator = [], faq = []] = await Promise.all(["Products", "Options", "Addons", "Settings", "Custom_Estimator", "FAQ"].map(tab));
   return {
-    products: parseProducts(safeRows(products, productBackup, r => r["folder"], r => Boolean(r["folder"] && r["name"]) && validNumber(r, "price", 1000) && (!r["compare_at_price"] || validNumber(r, "compare_at_price", 1000)), "Products")),
+    products: parseProducts(safeRows(products, productBackup, r => r["folder"] ?? "", r => Boolean(r["folder"] && r["name"]) && validNumber(r, "price", 1000) && (!r["compare_at_price"] || validNumber(r, "compare_at_price", 1000)), "Products")),
     optionGroups: parseOptions(safeRows(options, optionBackup, r => `${r["group_id"]}/${r["option"]}`, r => Boolean(r["group_id"] && r["option"]) && validNumber(r, "price_add_tl", 0), "Options")),
-    addons: parseAddons(safeRows(addons, addonBackup, r => r["addon_id"], r => Boolean(r["addon_id"] && r["product"]) && validNumber(r, "normal_price_tl", 1000) && validNumber(r, "addon_price_tl", 1000), "Addons")),
+    addons: parseAddons(safeRows(addons, addonBackup, r => r["addon_id"] ?? "", r => Boolean(r["addon_id"] && r["product"]) && validNumber(r, "normal_price_tl", 1000) && validNumber(r, "addon_price_tl", 1000), "Addons")),
     settings: parseSettings(settings[0] ?? {}, BUILTIN.settings),
     estimator: parseEstimator(safeRows(estimator, estimatorBackup, r => `${r["group"]}/${r["option"]}`, r => Boolean(r["group"] && r["option"]) && validNumber(r, "price_add_tl", -1), "Custom_Estimator")),
     faq: faq.length && faq.every(r => r["question_en"] && r["question_tr"] && r["answer_en"] && r["answer_tr"]) ? faq.map(r => ({ question_en: r["question_en"] ?? "", question_tr: r["question_tr"] ?? "", answer_en: r["answer_en"] ?? "", answer_tr: r["answer_tr"] ?? "", sort_order: parseNumber(r["sort_order"]) ?? 0 })) : SEED.faq,
