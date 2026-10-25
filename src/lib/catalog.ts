@@ -151,11 +151,7 @@ export function formatTl(n: number) {
   return `${new Intl.NumberFormat("tr-TR").format(n)} TL`;
 }
 
-/** 30% off, rounded down to the nearest 100, then +90 (4.490 → 3.190). */
-export function disc30(n: number) {
-  return discountedPrice(n, 30);
-}
-
+/** Product-specific discount, rounded down to 100 then +90. */
 export function discountedPrice(n: number, percent: number) {
   if (percent <= 0) return n;
   return Math.floor((n * (1 - percent / 100) + 1e-8) / 100) * 100 + 90;
@@ -164,24 +160,6 @@ export function discountedPrice(n: number, percent: number) {
 /** Piece price = product price + price_add_tl of each chosen option. */
 export function piecePrice(p: CatalogProduct, adds: number[], factor = 1) {
   return adjustPrice(p.price + adds.reduce((s, a) => s + a, 0), factor);
-}
-
-/**
- * The most expensive piece is full price; every other piece is 30% off.
- * Ties keep the main product at full price.
- */
-export function orderTotals(mainPiece: number, addons: Addon[]) {
-  const pieces = [
-    { full: mainPiece, discounted: disc30(mainPiece) },
-    ...addons.map((a) => ({ full: a.normal_price_tl, discounted: disc30(a.normal_price_tl) })),
-  ];
-  let fullIdx = 0;
-  pieces.forEach((p, i) => {
-    if (p.full > (pieces[fullIdx]?.full ?? 0)) fullIdx = i;
-  });
-  const total = pieces.reduce((s, p, i) => s + (i === fullIdx ? p.full : p.discounted), 0);
-  const fullSum = pieces.reduce((s, p) => s + p.full, 0);
-  return { total, savings: fullSum - total, fullIdx };
 }
 
 export function adjustPrice(amount: number, factor = 1) {

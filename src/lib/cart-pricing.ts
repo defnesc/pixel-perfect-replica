@@ -19,8 +19,8 @@ export function priceCart(items: CartLine[], products: CatalogProduct[], groups:
     const product = findProduct(item.product,products);
     if (!product) return { item, product, invalid:true, full:0, total:0, savings:0, charges:[] as number[] };
     const selected = Object.entries(item.options).map(([id,choice]) => groups.find(g=>g.group_id===id && product.option_groups.includes(id) && id !== 'colour')?.options.find(o=>o.option===choice));
-    const invalid = selected.some(o=>!o) || (!product.per_tooth && item.teeth !== 1);
-    const once = Object.entries(item.options).reduce((sum,[id,choice])=>sum+(id.startsWith('bar') ? groups.find(g=>g.group_id===id)?.options.find(o=>o.option===choice)?.price_add_tl ?? 0 : 0),0);
+    const invalid = !cartLineSchema.safeParse(item).success || selected.some(o=>!o) || (!product.per_tooth && item.teeth !== 1);
+    const once = Object.entries(item.options).reduce((sum,[id,choice])=>sum+(id.startsWith('bar') ? groups.find(g=>g.group_id===id && product.option_groups.includes(id))?.options.find(o=>o.option===choice)?.price_add_tl ?? 0 : 0),0);
     const each = selected.reduce((sum,o)=>sum+(o?.price_add_tl ?? 0),0)-once;
     const teeth = product.per_tooth ? item.teeth : 1;
     const charges = Array.from({length:item.quantity},()=>Array.from({length:teeth},(_,t)=>adjustPrice(product.price+each+(t===0 ? once : 0),factor))).flat();
