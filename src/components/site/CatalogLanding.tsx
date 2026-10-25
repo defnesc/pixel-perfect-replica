@@ -1,14 +1,20 @@
 import { Link } from "@tanstack/react-router";
 import { useLang, useT } from "@/i18n";
-import { photoUrl } from "@/lib/catalog";
+import { usePrices } from "@/lib/use-prices";
+import { classics, customDesigns, photoUrl } from "@/lib/catalog";
 
 /** Two large boxes — Classics and Custom. */
 export function CatalogBoxes() {
   const lang = useLang();
   const t = useT();
+  const { products, fmt, adjusted } = usePrices();
+  const minimum = (section: "classics" | "custom") => {
+    const rows = section === "classics" ? classics(products) : customDesigns(products);
+    return rows.length ? fmt(adjusted(Math.min(...rows.map(p => p.price)))) : t("price.ask");
+  };
   const boxes = [
-    { to: lang === "tr" ? "/$lang/klasikler" : "/$lang/classics", img: photoUrl("star-01.jpg"), title: t("cat.classics"), text: t("cat.classicsFrom") },
-    { to: "/$lang/custom", img: photoUrl("letter-01.jpg"), title: t("cat.custom"), text: t("cat.customFrom") },
+    { to: lang === "tr" ? "/$lang/klasikler" : "/$lang/classics", img: photoUrl("star-01.jpg"), title: t("cat.classics"), text: t("cat.classicsFrom", { price: minimum("classics") }) },
+    { to: "/$lang/custom", img: photoUrl("letter-01.jpg"), title: t("cat.custom"), text: t("cat.customFrom", { price: minimum("custom") }) },
   ] as const;
   return (
       <div className="grid gap-4 md:grid-cols-2">

@@ -3,16 +3,18 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { translate, useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { ADDONS, findProduct, formatTl, groupOf, orderTotals, photoUrl, piecePrice, productPhotos, type CatalogProduct } from "@/lib/catalog";
-import { formatForMessage, formatPrice, useCurrency, useLiveRates } from "@/lib/currency";
+import { findProduct, groupOf, orderTotals, photoUrl, piecePrice, productPhotos, type CatalogProduct } from "@/lib/catalog";
+import { formatForMessage } from "@/lib/currency";
+import { usePrices } from "@/lib/use-prices";
 import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
 import { Faq } from "@/components/site/Faq";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
 
 export const Route = createFileRoute("/$lang/product/$id")({
-  loader: ({ params }) => {
-    const p = findProduct(params.id);
+  loader: async ({ params, context }) => {
+    const data = await context.queryClient.ensureQueryData(sheetQuery);
+    const p = findProduct(params.id, data.products);
     if (!p) throw notFound();
     return { name_en: p.name, name_tr: p.name_tr };
   },
@@ -41,17 +43,10 @@ export const Route = createFileRoute("/$lang/product/$id")({
 
 function ProductPage() {
   const { lang, id } = Route.useParams() as { lang: Lang; id: string };
-  const product = findProduct(id);
+  const { data } = useSuspenseQuery(sheetQuery);
+  const product = findProduct(id, data.products);
   if (!product) throw notFound();
   return product.section === "custom" ? <CustomProduct lang={lang} product={product} /> : <ClassicsProduct lang={lang} product={product} />;
-}
-
-function useFmt(lang: Lang) {
-  const { data } = useSuspenseQuery(sheetQuery);
-  const cur = useCurrency();
-  const rates = useLiveRates(data.settings);
-  const fmt = (n: number) => (cur === "TRY" ? formatTl(n) : formatPrice(n, cur, lang, rates, data.settings.currency_symbol));
-  return { fmt, cur, settings: data.settings, rates };
 }
 
 function Gallery({ product, name }: { product: CatalogProduct; name: string }) {
@@ -79,24 +74,24 @@ function Gallery({ product, name }: { product: CatalogProduct; name: string }) {
 
 function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) {
   const t = useT();
-  const { fmt, cur, settings, rates } = useFmt(lang);
+  const { fmt, cur, settings, rates, factor, adjusted, optionGroups, pricedAddons } = usePrices();
   const name = lang === "tr" ? product.name_tr : product.name;
   const badge = lang === "tr" ? product.badge_tr : product.badge;
 
-  const colour = groupOf(product, "colour")!;
-  const bar = groupOf(product, "bar") ?? groupOf(product, "bar_cutout");
-  const stones = groupOf(product, "stones") ?? groupOf(product, "stones_cherub") ?? groupOf(product, "stones_dragon");
+  const colour = groupOf(product, "colour", optionGroups);
+  const bar = groupOf(product, "bar", optionGroups) ?? groupOf(product, "bar_cutout", optionGroups);
+  const stones = groupOf(product, "stones", optionGroups) ?? groupOf(product, "stones_cherub", optionGroups) ?? groupOf(product, "stones_dragon", optionGroups);
 
   const [colourIdx, setColourIdx] = useState(0);
   const [barIdx, setBarIdx] = useState(0);
   const [stonesIdx, setStonesIdx] = useState(0);
   const [picked, setPicked] = useState<Set<string>>(new Set());
 
-  const optLabel = (g: NonNullable<typeof bar>, i: number) => (lang === "tr" ? g.options[i]!.option_tr : g.options[i]!.option);
-  const colourName = optLabel(colour, colourIdx);
+  const optLabel = (g: NonNullable<typeof bar>, i: number) => (lang === "tr" ? g.options[i]?.option_tr : g.options[i]?.option) ?? "";
+  const colourName = colour ? optLabel(colour, colourIdx) : "";
   const adds = [bar?.options[barIdx]?.price_add_tl ?? 0, stones?.options[stonesIdx]?.price_add_tl ?? 0];
-  const piece = piecePrice(product, adds);
-  const addons = ADDONS.filter((a) => picked.has(a.addon_id));
+  const piece = piecePrice(product, adds, factor);
+  const addons = pricedAddons.filter((a) => picked.has(a.addon_id));
   const { total, savings } = orderTotals(piece, addons);
 
   const toggleAddon = (aid: string) =>
@@ -123,7 +118,7 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
     const oid = newOrderId();
     track("create_order_click", { product: product.folder });
     sendToCrm({
-      order_id: oid, source: "Website", language: lang.toUpperCase(), product: product.name,
+      price_factor: factor, usd_try: rates.usd_try, order_id: oid, source: "Website", language: lang.toUpperCase(), product: product.name,
       colour: colourName, bar: bar ? optLabel(bar, barIdx) : "", stones: stones ? optLabel(stones, stonesIdx) : "",
       addons: addons.map((a) => a.name).join(", "), estimated_price: total, currency: cur, status: "1 – Order created on website",
     });
@@ -142,17 +137,17 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
           {badge && <span className="rounded-full bg-primary px-3 py-1 font-mono text-[11px] uppercase tracking-[0.04em] text-primary-foreground">{badge}</span>}
         </div>
         <p className="mt-4 font-mono text-[15px] uppercase tracking-[0.04em]">
-          {product.compare_at_price && <span className="mr-2 text-helper line-through">{fmt(product.compare_at_price)}</span>}
+          {product.compare_at_price && <span className="mr-2 text-helper line-through">{fmt(adjusted(product.compare_at_price))}</span>}
           {fmt(piece)}
         </p>
         {product.folder === "classic-cap-and-frame-duo" && product.compare_at_price && (
-          <p className="helper mt-1">{t("product.duoSave", { x: fmt(product.compare_at_price - product.price) })}</p>
+          <p className="helper mt-1">{t("product.duoSave", { x: fmt(adjusted(product.compare_at_price) - adjusted(product.price)) })}</p>
         )}
         <p className="helper mt-1">{t("product.material")}</p>
 
         <Question id="q-colour" title={t("product.colour")}>
           <div className="grid grid-cols-2 gap-2">
-            {colour.options.map((o, i) => (
+            {colour?.options.map((o, i) => (
               <button key={o.option} type="button" onClick={() => setColourIdx(i)} aria-pressed={colourIdx === i} className={`pill ${colourIdx === i ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
                 {lang === "tr" ? o.option_tr : o.option}
               </button>
@@ -165,7 +160,7 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
           <Question id="q-bar" title={lang === "tr" ? bar.label_tr : bar.label}>
             <div className="grid gap-2">
               {bar.options.map((o, i) => (
-                <Option key={o.option} selected={barIdx === i} onSelect={() => setBarIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(o.price_add_tl)}` : undefined} />
+                <Option key={o.option} selected={barIdx === i} onSelect={() => setBarIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(piecePrice(product, [o.price_add_tl, adds[1] ?? 0], factor) - piecePrice(product, [0, adds[1] ?? 0], factor))}` : undefined} />
               ))}
             </div>
           </Question>
@@ -175,7 +170,7 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
           <Question id="q-stones" title={lang === "tr" ? stones.label_tr : stones.label}>
             <div className="grid gap-2">
               {stones.options.map((o, i) => (
-                <Option key={o.option} selected={stonesIdx === i} onSelect={() => setStonesIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(o.price_add_tl)}` : undefined} />
+                <Option key={o.option} selected={stonesIdx === i} onSelect={() => setStonesIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(piecePrice(product, [adds[0] ?? 0, o.price_add_tl], factor) - piecePrice(product, [adds[0] ?? 0, 0], factor))}` : undefined} />
               ))}
             </div>
             {stonesNote && <p className="helper mt-3">{stonesNote}</p>}
@@ -184,7 +179,7 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
 
         <Question id="q-addons" title={t("addon.title")}>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {ADDONS.map((a) => {
+            {pricedAddons.map((a) => {
               const on = picked.has(a.addon_id);
               const img = photoUrl(`${a.photo_folder}-01.jpg`);
               return (
@@ -223,17 +218,17 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
 
 function CustomProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) {
   const t = useT();
-  const { fmt, settings } = useFmt(lang);
+  const { fmt, settings, adjusted, optionGroups, factor, rates } = usePrices();
   const name = lang === "tr" ? product.name_tr : product.name;
   const note = lang === "tr" ? product.price_note_tr : product.price_note;
-  const colour = groupOf(product, "colour")!;
+  const colour = groupOf(product, "colour", optionGroups);
   const [colourIdx, setColourIdx] = useState(0);
-  const colourName = lang === "tr" ? colour.options[colourIdx]!.option_tr : colour.options[colourIdx]!.option;
+  const colourName = (lang === "tr" ? colour?.options[colourIdx]?.option_tr : colour?.options[colourIdx]?.option) ?? "";
 
   const quoteHref = waLink(settings.whatsapp_number, t("msg.quote", { name, colour: colourName }));
   const onQuote = () => {
     track("custom_quote_click", { product: product.folder });
-    sendToCrm({ order_id: newOrderId(), source: "Custom quote", language: lang.toUpperCase(), product: product.name, colour: colourName, status: "1 – Order created on website" });
+    sendToCrm({ price_factor: factor, usd_try: rates.usd_try, estimated_price: adjusted(product.price), order_id: newOrderId(), source: "Custom quote", language: lang.toUpperCase(), product: product.name, colour: colourName, status: "1 – Order created on website" });
   };
 
   return (
@@ -246,13 +241,13 @@ function CustomProduct({ lang, product }: { lang: Lang; product: CatalogProduct 
       <div className="px-4 md:px-0">
         <h1 className="mt-2 h1-xl">{name}</h1>
         <p className="mt-4 font-mono text-[15px] uppercase tracking-[0.04em]">
-          {t("card.approx", { price: fmt(product.price) })}{note ? ` · ${note}` : ""}
+          {t("card.approx", { price: fmt(adjusted(product.price)) })}{note ? ` · ${note}` : ""}
         </p>
         <p className="helper mt-1">{t("product.material")}</p>
 
         <Question id="q-colour" title={t("product.colour")}>
           <div className="grid grid-cols-2 gap-2">
-            {colour.options.map((o, i) => (
+            {colour?.options.map((o, i) => (
               <button key={o.option} type="button" onClick={() => setColourIdx(i)} aria-pressed={colourIdx === i} className={`pill ${colourIdx === i ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
                 {lang === "tr" ? o.option_tr : o.option}
               </button>

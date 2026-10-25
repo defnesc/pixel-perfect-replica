@@ -1,7 +1,7 @@
-addon_id,name,name_tr,photo_folder,normal_price_tl,addon_price_tl,sort_order,shown_on
-addon-classic-cap,Classic Cap,Klasik kaplama,classic-cap,4990,3490,1,every Classics product page
-addon-frame,Frame,Çerçeve,frame,4990,3490,2,every Classics product page
-addon-gap-filler,Gap filler,Diş arası,gap-filler,4990,3490,3,every Classics product page
-addon-iced-gap-filler,Iced gap filler,Taşlı diş arası,gap-filler,6490,4590,4,every Classics product page
-addon-frame-with-bar,Frame with bar,Çerçeve ve bar,frame-with-bar,6490,4590,5,every Classics product page
-addon-frame-with-iced-bar,Frame with iced bar,Çerçeve ve taşlı bar,frame-with-iced-bar,6990,4890,6,every Classics product page
+addon_id,name,name_tr,photo_folder,product,option,normal_price_tl,addon_price_tl,sort_order
+addon-classic-cap,Classic Cap,Klasik kaplama,classic-cap,classic-cap,,4990,3490,1
+addon-frame,Frame,Çerçeve,frame,frame,,4990,3490,2
+addon-gap-filler,Gap filler,Diş arası,gap-filler,gap-filler,Without stones,4990,3490,3
+addon-iced-gap-filler,Iced gap filler,Taşlı diş arası,gap-filler,gap-filler,With stones,6490,4590,4
+addon-frame-with-bar,Frame with bar,Çerçeve ve bar,frame-with-bar,frame-with-bar,,6490,4590,5
+addon-frame-with-iced-bar,Frame with iced bar,Çerçeve ve taşlı bar,frame-with-iced-bar,frame-with-iced-bar,,6990,4890,6

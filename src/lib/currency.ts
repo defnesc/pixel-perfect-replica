@@ -4,12 +4,13 @@ import { formatTry } from "./pricing";
 export type Currency = "TRY" | "EUR" | "USD";
 export const CURRENCIES: Currency[] = ["TRY", "EUR", "USD"];
 export const CURRENCY_SYMBOL: Record<Currency, string> = { TRY: "₺", EUR: "€", USD: "$" };
-export interface Rates { usd_try: number; eur_try: number }
+export interface Rates { usd_try: number; eur_try: number; foreign_round_up_to?: number; auto_rates?: boolean }
 
 /** Show a TRY amount in another currency. USD/EUR round UP to the nearest 5; TRY stays exact. */
 export function convertFromTry(tryAmount: number, cur: Currency, rates: Rates): number {
-  if (cur === "USD") return Math.ceil(tryAmount / rates.usd_try / 5) * 5;
-  if (cur === "EUR") return Math.ceil(tryAmount / rates.eur_try / 5) * 5;
+  const step = rates.foreign_round_up_to ?? 5;
+  if (cur === "USD") return Math.ceil(tryAmount / rates.usd_try / step) * step;
+  if (cur === "EUR") return Math.ceil(tryAmount / rates.eur_try / step) * step;
   return Math.round(tryAmount);
 }
 
@@ -66,7 +67,7 @@ function ensureLiveRates() {
     if (raw) {
       const saved = JSON.parse(raw) as { usd_try?: number; eur_try?: number; ts?: number };
       if (saved.usd_try && saved.eur_try && saved.ts && Date.now() - saved.ts < RATES_TTL) {
-        liveRates = { usd_try: saved.usd_try, eur_try: saved.eur_try };
+        setLiveRates({ usd_try: saved.usd_try, eur_try: saved.eur_try });
         return;
       }
     }
@@ -88,8 +89,8 @@ export function useLiveRates(fallback: Rates): Rates {
     () => liveRates,
     () => null,
   );
-  useEffect(() => { ensureLiveRates(); }, []);
-  return live ?? fallback;
+  useEffect(() => { if (fallback.auto_rates !== false) ensureLiveRates(); }, [fallback.auto_rates]);
+  return safeRates(live, fallback);
 }
 
 // ---- chosen currency store (remembered in the browser, safe when storage is blocked) ----
@@ -117,4 +118,10 @@ export function useCurrency(): Currency {
     } catch { /* ignore */ }
   }, []);
   return cur;
+}
+
+export function safeRates(live: Rates | null, backup: Rates): Rates {
+  const accept = (value: number | undefined, base: number) => value !== undefined && Number.isFinite(value) && value >= base * 0.75 && value <= base * 1.25 ? value : base;
+  if (backup.auto_rates === false) return backup;
+  return { ...backup, usd_try: accept(live?.usd_try, backup.usd_try), eur_try: accept(live?.eur_try, backup.eur_try) };
 }

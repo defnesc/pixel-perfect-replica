@@ -2,7 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { customDesigns, formatTl } from "@/lib/catalog";
+import { customDesigns } from "@/lib/catalog";
+import { usePrices } from "@/lib/use-prices";
 import { track, waLink } from "@/lib/order";
 import { seo } from "@/lib/seo";
 import { ProductCard } from "@/components/site/ProductCard";
@@ -18,6 +19,7 @@ function CustomPage() {
   const { lang } = Route.useParams() as { lang: Lang };
   const t = useT();
   const { data } = useSuspenseQuery(sheetQuery);
+  const { products, fmt, adjusted } = usePrices();
   const goDown = () => document.getElementById("designs")?.scrollIntoView({ behavior: "smooth" });
 
   return (
@@ -43,9 +45,9 @@ function CustomPage() {
 
       <section id="designs" className="scroll-mt-24 pt-6">
         <div className="grid grid-cols-2 gap-x-2.5 gap-y-[22px] md:grid-cols-3 lg:grid-cols-4">
-          {customDesigns().map((p) => {
+          {customDesigns(products).map((p) => {
             const note = lang === "tr" ? p.price_note_tr : p.price_note;
-            const priceText = t("card.approx", { price: formatTl(p.price) }) + (note ? ` · ${note}` : "");
+            const priceText = t("card.approx", { price: fmt(adjusted(p.price)) }) + (note ? ` · ${note}` : "");
             return <ProductCard key={p.folder} p={p} priceText={priceText} />;
           })}
         </div>
