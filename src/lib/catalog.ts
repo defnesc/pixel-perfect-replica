@@ -153,7 +153,12 @@ export function formatTl(n: number) {
 
 /** 30% off, rounded down to the nearest 100, then +90 (4.490 → 3.190). */
 export function disc30(n: number) {
-  return Math.floor((n * 0.7) / 100) * 100 + 90;
+  return discountedPrice(n, 30);
+}
+
+export function discountedPrice(n: number, percent: number) {
+  if (percent <= 0) return n;
+  return Math.floor((n * (1 - percent / 100) + 1e-8) / 100) * 100 + 90;
 }
 
 /** Piece price = product price + price_add_tl of each chosen option. */
@@ -195,7 +200,7 @@ export function adjustedAddons(addons: Addon[], products: CatalogProduct[], grou
     const option = groups.filter(g => product.option_groups.includes(g.group_id)).flatMap(g => g.options).find(o => o.option === a.option);
     if (a.option && !option) return [];
     const full = piecePrice(product, [option?.price_add_tl ?? 0], factor);
-    return [{ ...a, normal_price_tl: full, addon_price_tl: disc30(full) }];
+    return [{ ...a, normal_price_tl: full, addon_price_tl: discountedPrice(full, product.extra_piece_discount) }];
   });
 }
 

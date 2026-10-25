@@ -1,6 +1,9 @@
 import { Link, useLocation, useNavigate } from "@tanstack/react-router";
 import { saveLang, useLang, useT, type Lang } from "@/i18n";
 import { CURRENCIES, CURRENCY_SYMBOL, setCurrency, useCurrency } from "@/lib/currency";
+import { ShoppingBag } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useCart } from "@/lib/cart";
 
 const TR_ALIASES: [string, string][] = [["/privacy", "/gizlilik"], ["/gift-card", "/hediye-karti"], ["/jewelry", "/taki"], ["/catalog", "/katalog"], ["/classics", "/klasikler"]];
 
@@ -25,6 +28,8 @@ export function Header() {
   const loc = useLocation();
   const navigate = useNavigate();
   const cur = useCurrency();
+  const { items } = useCart();
+  const count = items.reduce((sum, line) => sum + line.quantity * line.teeth, 0);
   const switchTo = (l: Lang) => {
     if (l === lang) return;
     saveLang(l);
@@ -43,6 +48,9 @@ export function Header() {
           <Link to="/$lang" params={{ lang }} className="font-display text-xl">333</Link>
           <NavLinks className="hidden items-center gap-6 lg:flex" />
           <div className="flex items-center gap-1 label-xs">
+            <Button asChild variant="ghost" size="icon" className="relative shrink-0 rounded-full">
+              <Link to="/$lang/cart" params={{ lang }} aria-label={t("cart.open", { count })}><ShoppingBag />{count > 0 && <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[9px] text-primary-foreground">{count}</span>}</Link>
+            </Button>
             <div className="flex items-center" role="group" aria-label={t("currency.label")}>
               {CURRENCIES.map((c) => (
                 <button key={c} type="button" onClick={() => setCurrency(c)} className={sw(c === cur)} aria-pressed={c === cur} aria-label={c}>

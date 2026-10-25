@@ -3,6 +3,8 @@ import { useEffect } from "react";
 import { isLang, saveLang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
 import { Footer, Header } from "@/components/site/Shell";
+import { CartProvider } from "@/lib/cart";
+import { Toaster } from "sonner";
 
 export const Route = createFileRoute("/$lang")({
   beforeLoad: ({ params }) => {
@@ -22,10 +24,11 @@ function LangLayout() {
     document.documentElement.lang = lang;
   }, [lang]);
   return (
-    <div className="min-h-screen">
+    <CartProvider><div className="min-h-screen">
       <Header />
       <Outlet />
       <Footer />
-    </div>
+      <Toaster theme="dark" position="top-center" />
+    </div></CartProvider>
   );
 }
