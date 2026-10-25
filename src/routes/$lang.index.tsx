@@ -5,7 +5,10 @@ import { CatalogBoxes } from "@/components/site/CatalogLanding";
 import introAsset from "@/assets/hero-grillz.jpg.asset.json";
 
 export const Route = createFileRoute("/$lang/")({
-  head: ({ params }) => seo(params.lang as Lang, "home"),
+  head: ({ params }) => {
+    const meta = seo(params.lang as Lang, "home");
+    return { ...meta, meta: [...meta.meta, { property: "og:image", content: introAsset.url }, { name: "twitter:image", content: introAsset.url }] };
+  },
   component: Catalog,
 });
 

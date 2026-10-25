@@ -20,15 +20,15 @@ export function parseSettings(row: Row, backup = SEED.settings): Settings {
   };
   const flag = (key: "auto_rates" | "auto_price_adjust") => row[key] === "yes" ? true : row[key] === "no" ? false : backup[key];
   return {
-    whatsapp_number: row.whatsapp_number?.replace(/\D/g, "") || backup.whatsapp_number,
-    scan_email: row.scan_email || backup.scan_email,
-    currency_symbol: row.currency_symbol || backup.currency_symbol,
+    whatsapp_number: row["whatsapp_number"]?.replace(/\D/g, "") || backup.whatsapp_number,
+    scan_email: row["scan_email"] || backup.scan_email,
+    currency_symbol: row["currency_symbol"] || backup.currency_symbol,
     usd_try: positive("usd_try"), eur_try: positive("eur_try"),
     auto_rates: flag("auto_rates"), foreign_round_up_to: positive("foreign_round_up_to"),
     price_base_usd_try: positive("price_base_usd_try"), auto_price_adjust: flag("auto_price_adjust"), price_step_percent: positive("price_step_percent"),
   };
 }
-const parseEstimator = (rows: Row[]): EstimatorRow[] => rows.map(r => ({ group: r.group ?? "", option: r.option ?? "", option_tr: r.option_tr ?? "", price_add_tl: parseNumber(r.price_add_tl) ?? 0, note: r.note ?? "" }));
+const parseEstimator = (rows: Row[]): EstimatorRow[] => rows.map(r => ({ group: r["group"] ?? "", option: r["option"] ?? "", option_tr: r["option_tr"] ?? "", price_add_tl: parseNumber(r["price_add_tl"]) ?? 0, note: r["note"] ?? "" }));
 export const BUILTIN: SheetData = { products: PRODUCTS, optionGroups: OPTION_GROUPS, addons: ADDONS, estimator: parseEstimator(parseCsv(estimatorCsv)), settings: parseSettings(parseCsv(settingsCsv)[0] ?? {}), faq: SEED.faq };
 
 /** Restore invalid rows by identity; valid omissions in the sheet remain omissions. */
@@ -60,14 +60,14 @@ async function tab(name: string): Promise<Row[]> {
   }
 }
 export async function loadSheet(): Promise<SheetData> {
-  const [products, options, addons, settings, estimator, faq] = await Promise.all(["Products", "Options", "Addons", "Settings", "Custom_Estimator", "FAQ"].map(tab));
+  const [products = [], options = [], addons = [], settings = [], estimator = [], faq = []] = await Promise.all(["Products", "Options", "Addons", "Settings", "Custom_Estimator", "FAQ"].map(tab));
   return {
-    products: parseProducts(safeRows(products, productBackup, r => r.folder, r => Boolean(r.folder && r.name) && validNumber(r, "price", 1000) && (!r.compare_at_price || validNumber(r, "compare_at_price", 1000)), "Products")),
-    optionGroups: parseOptions(safeRows(options, optionBackup, r => `${r.group_id}/${r.option}`, r => Boolean(r.group_id && r.option) && validNumber(r, "price_add_tl", 0), "Options")),
-    addons: parseAddons(safeRows(addons, addonBackup, r => r.addon_id, r => Boolean(r.addon_id && r.product) && validNumber(r, "normal_price_tl", 1000) && validNumber(r, "addon_price_tl", 1000), "Addons")),
+    products: parseProducts(safeRows(products, productBackup, r => r["folder"], r => Boolean(r["folder"] && r["name"]) && validNumber(r, "price", 1000) && (!r["compare_at_price"] || validNumber(r, "compare_at_price", 1000)), "Products")),
+    optionGroups: parseOptions(safeRows(options, optionBackup, r => `${r["group_id"]}/${r["option"]}`, r => Boolean(r["group_id"] && r["option"]) && validNumber(r, "price_add_tl", 0), "Options")),
+    addons: parseAddons(safeRows(addons, addonBackup, r => r["addon_id"], r => Boolean(r["addon_id"] && r["product"]) && validNumber(r, "normal_price_tl", 1000) && validNumber(r, "addon_price_tl", 1000), "Addons")),
     settings: parseSettings(settings[0] ?? {}, BUILTIN.settings),
-    estimator: parseEstimator(safeRows(estimator, estimatorBackup, r => `${r.group}/${r.option}`, r => Boolean(r.group && r.option) && validNumber(r, "price_add_tl", -1), "Custom_Estimator")),
-    faq: faq.length && faq.every(r => r.question_en && r.question_tr && r.answer_en && r.answer_tr) ? faq.map(r => ({ question_en: r.question_en, question_tr: r.question_tr, answer_en: r.answer_en, answer_tr: r.answer_tr, sort_order: parseNumber(r.sort_order) ?? 0 })) : SEED.faq,
+    estimator: parseEstimator(safeRows(estimator, estimatorBackup, r => `${r["group"]}/${r["option"]}`, r => Boolean(r["group"] && r["option"]) && validNumber(r, "price_add_tl", -1), "Custom_Estimator")),
+    faq: faq.length && faq.every(r => r["question_en"] && r["question_tr"] && r["answer_en"] && r["answer_tr"]) ? faq.map(r => ({ question_en: r["question_en"] ?? "", question_tr: r["question_tr"] ?? "", answer_en: r["answer_en"] ?? "", answer_tr: r["answer_tr"] ?? "", sort_order: parseNumber(r["sort_order"]) ?? 0 })) : SEED.faq,
   };
 }
 export const sheetQuery = queryOptions({ queryKey: ["price-sheet", SHEET_ID], queryFn: loadSheet, staleTime: 5 * 60 * 1000, retry: false, refetchOnWindowFocus: false, refetchOnReconnect: false });
