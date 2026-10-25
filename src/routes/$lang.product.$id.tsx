@@ -107,10 +107,16 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
       return n;
     });
 
+  const stonesNote = stones
+    ? (lang === "tr"
+        ? stones.options[stonesIdx]?.small_note_tr || stones.options.find((o) => o.small_note_tr)?.small_note_tr
+        : stones.options[stonesIdx]?.small_note || stones.options.find((o) => o.small_note)?.small_note) || ""
+    : "";
+
   const orderHref = () => {
     const parts = [`${name} (${[colourName, bar && barIdx > 0 ? optLabel(bar, barIdx) : "", stones && stonesIdx > 0 ? optLabel(stones, stonesIdx) : ""].filter(Boolean).join(", ")})`];
     for (const a of addons) parts.push(`${lang === "tr" ? a.name_tr : a.name} (${t("msg.addonOff")})`);
-    return waLink(settings.whatsapp_number, `${t("msg.order")} ${parts.join(" + ")}. ${t("msg.total")}: ${formatForMessage(total, cur, lang, settings)}`);
+    return waLink(settings.whatsapp_number, `${t("msg.order")} ${parts.join(" + ")}. ${t("msg.total")}: ${formatForMessage(total, cur, lang, rates)}`);
   };
 
   const onOrder = () => {
@@ -139,6 +145,9 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
           {product.compare_at_price && <span className="mr-2 text-helper line-through">{fmt(product.compare_at_price)}</span>}
           {fmt(piece)}
         </p>
+        {product.folder === "classic-cap-and-frame-duo" && product.compare_at_price && (
+          <p className="helper mt-1">{t("product.duoSave", { x: fmt(product.compare_at_price - product.price) })}</p>
+        )}
         <p className="helper mt-1">{t("product.material")}</p>
 
         <Question id="q-colour" title={t("product.colour")}>
@@ -169,7 +178,7 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
                 <Option key={o.option} selected={stonesIdx === i} onSelect={() => setStonesIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(o.price_add_tl)}` : undefined} />
               ))}
             </div>
-            <p className="helper mt-3">{t("product.stonesNote")}</p>
+            {stonesNote && <p className="helper mt-3">{stonesNote}</p>}
           </Question>
         )}
 
@@ -200,6 +209,7 @@ function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduc
             <span className="font-mono text-lg uppercase tracking-[0.04em]">{fmt(total)}</span>
           </div>
           {savings > 0 && <p className="mt-1 text-right font-mono text-[13px] uppercase tracking-[0.04em] text-success">{t("product.save", { x: fmt(savings) })}</p>}
+          {cur !== "TRY" && <p className="mt-1 text-right text-[12px] text-helper">{t("price.approx")}</p>}
           <a href={orderHref()} target="_blank" rel="noreferrer" onClick={onOrder} className="btn mt-4 w-full bg-success text-success-foreground">
             <WhatsAppIcon /> {t("cta.order")}
           </a>
