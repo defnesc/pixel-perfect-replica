@@ -4,7 +4,7 @@ import { useState } from "react";
 import { translate, useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
 import { ADDONS, findProduct, formatTl, groupOf, orderTotals, photoUrl, piecePrice, productPhotos, type CatalogProduct } from "@/lib/catalog";
-import { formatForMessage, formatPrice, useCurrency } from "@/lib/currency";
+import { formatForMessage, formatPrice, useCurrency, useLiveRates } from "@/lib/currency";
 import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
 import { Faq } from "@/components/site/Faq";
@@ -49,8 +49,9 @@ function ProductPage() {
 function useFmt(lang: Lang) {
   const { data } = useSuspenseQuery(sheetQuery);
   const cur = useCurrency();
-  const fmt = (n: number) => (cur === "TRY" ? formatTl(n) : formatPrice(n, cur, lang, data.settings, data.settings.currency_symbol));
-  return { fmt, cur, settings: data.settings };
+  const rates = useLiveRates(data.settings);
+  const fmt = (n: number) => (cur === "TRY" ? formatTl(n) : formatPrice(n, cur, lang, rates, data.settings.currency_symbol));
+  return { fmt, cur, settings: data.settings, rates };
 }
 
 function Gallery({ product, name }: { product: CatalogProduct; name: string }) {
@@ -78,13 +79,13 @@ function Gallery({ product, name }: { product: CatalogProduct; name: string }) {
 
 function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) {
   const t = useT();
-  const { fmt, cur, settings } = useFmt(lang);
+  const { fmt, cur, settings, rates } = useFmt(lang);
   const name = lang === "tr" ? product.name_tr : product.name;
   const badge = lang === "tr" ? product.badge_tr : product.badge;
 
   const colour = groupOf(product, "colour")!;
   const bar = groupOf(product, "bar") ?? groupOf(product, "bar_cutout");
-  const stones = groupOf(product, "stones") ?? groupOf(product, "stones_cherub");
+  const stones = groupOf(product, "stones") ?? groupOf(product, "stones_cherub") ?? groupOf(product, "stones_dragon");
 
   const [colourIdx, setColourIdx] = useState(0);
   const [barIdx, setBarIdx] = useState(0);
