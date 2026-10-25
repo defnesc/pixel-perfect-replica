@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
+import { linkedAddon, matchingMain } from "@/lib/cart-actions";
 import { addonLine, configuredLine, priceCart } from "@/lib/cart-pricing";
 import { Stepper } from "@/components/site/Stepper";
 import { usePrices } from "@/lib/use-prices";
@@ -285,24 +286,19 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
                 .map((a) => {
                   const line = addonLine(a, products, optionGroups, colour);
                   if (!line) return null;
-                  const combined = priceCart([...cart.items, line], products, optionGroups, factor);
+                  const parent = matchingMain(cart.items, item);
+                  const existing = linkedAddon(cart.items, item, line);
+                  const combined = priceCart([...cart.items, ...(!parent ? [item] : []), line], products, optionGroups, factor);
+                  const addonName = lang === "tr" ? a.name_tr : a.name;
+                  const change = (n: number) => {
+                    cart.addon(item, line, n);
+                    if (n > 0 && !existing) toast.success(parent ? t("cart.added") : t("addon.bothAdded", { main: name, addon: addonName }));
+                  };
                   const charge = combined.lines[combined.lines.length - 1];
                   const img = photoUrl(`${a.photo_folder}-01.jpg`);
                   return (
-                    <Button
-                      key={a.addon_id}
-                      variant="outline"
-                      className="h-auto flex-col items-stretch gap-0 overflow-hidden whitespace-normal rounded-[20px] p-0 text-left"
-                      onClick={() => {
-                        cart.add(line);
-                        toast.success(t("cart.added"), {
-                          action: {
-                            label: t("cart.view"),
-                            onClick: () => navigate({ to: "/$lang/cart", params: { lang } }),
-                          },
-                        });
-                      }}
-                    >
+                    <div key={a.addon_id} className={`overflow-hidden rounded-[20px] border ${existing ? "border-primary" : "border-border"}`}>
+                    <Button variant="ghost" className="h-auto w-full flex-col items-stretch gap-0 whitespace-normal p-0 text-left" onClick={() => change(Math.min(10, (existing?.quantity ?? 0) + 1))}>
                       {img ? (
                         <img
                           src={img}
@@ -329,6 +325,8 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
                         </span>
                       </span>
                     </Button>
+                    {existing && <div className="flex justify-center px-1 pb-3"><Stepper value={existing.quantity} min={0} max={10} label={addonName} onChange={change} /></div>}
+                    </div>
                   );
                 })}
             </div>

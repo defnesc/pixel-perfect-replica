@@ -6,6 +6,7 @@ import {
   type CatalogProduct,
   type OptionGroup,
   type Addon,
+  estimateCustom,
 } from "./catalog";
 
 export const cartLineSchema = z.object({
@@ -15,9 +16,22 @@ export const cartLineSchema = z.object({
   options: z.record(z.string().max(100)).refine((v) => Object.keys(v).length <= 8),
   quantity: z.number().int().min(1).max(10),
   teeth: z.number().int().min(1).max(8),
+  addonOf: z.string().min(1).max(100).optional(),
+  kind: z.enum(["catalog", "estimate"]).optional(),
+  estimate: z.object({
+    jaw: z.enum(["Upper", "Lower", "Both"]),
+    style: z.string().min(1).max(100),
+    stones: z.string().min(1).max(100),
+    engraving: z.string().min(1).max(100),
+  }).optional(),
+}).refine((l) => l.kind !== "estimate" || (Boolean(l.estimate) && !l.addonOf), {
+  message: "Estimate configuration required",
 });
 export type CartLine = z.infer<typeof cartLineSchema>;
-export const cartSchema = z.array(cartLineSchema).max(100);
+export const cartSchema = z.array(cartLineSchema).max(100).refine((items) =>
+  new Set(items.map((l) => l.id)).size === items.length && items.every((l) => !l.addonOf || items.some((p) => p.id === l.addonOf && !p.addonOf && p.kind !== "estimate")),
+  { message: "Invalid add-on relationship" },
+);
 export const answersSchema = z.object({
   scan: z.enum(["istanbul", "city", "stl"]),
   delivery: z.enum(["pickup", "shipping"]),
@@ -27,6 +41,9 @@ export const answersSchema = z.object({
 });
 export type Answers = z.infer<typeof answersSchema>;
 export type DraftAnswers = Partial<Answers>;
+export function raisedSinceOrder(date: string, saved: number, current: number, now = Date.now()) {
+  return saved < current && now - new Date(date).getTime() > 3 * 24 * 60 * 60 * 1000;
+}
 export function firstUnanswered(a: DraftAnswers) {
   return (["scan", "delivery", "payment", "adult", "privacy"] as const).find((k) => !a[k]);
 }
@@ -35,7 +52,7 @@ export const orderSchema = z.object({
   id: z.string().regex(/^GZ-\d{4}$/),
   date: z.string().datetime(),
   lang: z.enum(["en", "tr"]),
-  items: cartSchema.min(1),
+  items: cartSchema.refine((items) => items.length > 0),
   answers: answersSchema,
   factor: z.number().finite().min(1).max(100),
   total: z.number().finite().nonnegative(),
@@ -108,8 +125,16 @@ export function priceCart(
   products: CatalogProduct[],
   groups: OptionGroup[],
   factor: number,
+  estimator: { group: string; option: string; price_add_tl: number }[] = [],
 ) {
   const lines = items.map((item) => {
+    if (item.kind === "estimate") {
+      const e = item.estimate;
+      const choices = e ? [e.style, e.stones, e.engraving] : [];
+      const validGroups = e && ["style", "stones", "engraving"].every((group, i) => estimator.some((r) => r.group === group && r.option === choices[i]));
+      const amount = validGroups && cartLineSchema.safeParse(item).success ? estimateCustom(estimator, item.teeth, choices, factor) : null;
+      return { item, product: undefined, invalid: amount === null, full: (amount ?? 0) * item.quantity, total: 0, savings: 0, charges: amount === null ? [] : Array.from({ length: item.quantity }, () => amount) };
+    }
     const product = findProduct(item.product, products);
     if (!product)
       return {
@@ -183,7 +208,7 @@ export function priceCart(
   lines.forEach((l, i) => {
     if (l.invalid) return;
     l.charges = l.charges.map((n, j) =>
-      l.product?.section === "custom" || (i === fullLine && j === fullPiece)
+      l.item.kind === "estimate" || l.product?.section === "custom" || (i === fullLine && j === fullPiece)
         ? n
         : discountedPrice(n, l.product?.extra_piece_discount ?? 0),
     );
@@ -194,7 +219,7 @@ export function priceCart(
     lines,
     total: lines.filter((l) => l.product?.section === "classics").reduce((s, l) => s + l.total, 0),
     estimated: lines
-      .filter((l) => l.product?.section === "custom")
+      .filter((l) => l.product?.section === "custom" || l.item.kind === "estimate")
       .reduce((s, l) => s + l.total, 0),
     savings: lines.reduce((s, l) => s + l.savings, 0),
     invalid: lines.some((l) => l.invalid),

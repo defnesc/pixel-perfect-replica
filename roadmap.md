@@ -11,4 +11,10 @@
 - [x] Add bilingual cart questions, validation and full-screen next steps.
 - [x] Create WhatsApp/CRM order payloads and encoded bilingual noindex check pages.
 - [x] Verify cart, teeth/bar prices, questions and check-link flow on mobile and desktop.
-- [ ] Verify delivery to CRM: blocked until VITE_CRM_WEBHOOK_URL is supplied. Payload fields are implemented.
+- [ ] Confirm saved CRM rows: endpoint responds “333 order log is running” and outgoing payload is verified; no read-back access to the private order log.
+
+# Custom estimator and cart fixes
+- [x] Link add-ons to configured main pieces, show counters and confirm cascading removal.
+- [x] Clear cart after WhatsApp opens and show order-time/current price levels.
+- [x] Add sheet-priced instant estimator, cart estimates and bilingual messages/check links.
+- [x] Verify pricing tests and end-to-end flows (65 tests; mobile/desktop estimator, linked removal, order send and check read-back).
