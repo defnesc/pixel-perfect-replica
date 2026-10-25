@@ -43,9 +43,9 @@ export function CustomEstimator() {
         <div role="group" aria-label={t(`estimator.${group}`)} className={`grid gap-2 ${group === "style" ? "grid-cols-3" : "grid-cols-2"}`}>
           {estimator.filter((r) => r.group === group).map((row) => {
             const src = group === "style" ? photoUrl(examples[row.option] ?? "") : undefined;
-            return <Button key={row.option} variant="outline" aria-pressed={choices[group] === row.option} onClick={() => setChoices((v) => ({ ...v, [group]: row.option }))} className={`h-auto min-h-12 flex-col overflow-hidden whitespace-normal p-2 ${choices[group] === row.option ? "border-primary bg-primary/10" : ""}`}>
+            return <Button key={row.option} variant="outline" aria-pressed={choices[group] === row.option} onClick={() => setChoices((v) => ({ ...v, [group]: row.option }))} className={`h-auto min-h-12 flex-col overflow-hidden whitespace-normal p-2 ${group === "style" ? "rounded-lg" : ""} ${choices[group] === row.option ? "border-primary bg-primary/10" : ""}`}>
+              <span>{group === "engraving" ? t(`estimator.option.${row.option}`) : lang === "tr" ? row.option_tr : row.option}</span>
               {src && <img src={src} alt="" className="aspect-square w-full rounded object-cover" />}
-              <span>{lang === "tr" ? row.option_tr : t(`estimator.option.${row.option}`)}</span>
               {row.price_add_tl < 0 && <span className="text-xs text-helper">{t("price.ask")}</span>}
             </Button>;
           })}
