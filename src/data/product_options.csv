@@ -3,7 +3,7 @@ colour,Colour,Renk,White,Beyaz,0,yes,1,"If you can't decide, go with white!",Kar
 colour,Colour,Renk,Yellow,Sarı,0,,2,,
 bar,Bar,Bar,No bar,Barsız,0,yes,1,,
 bar,Bar,Bar,Bar,Bar,1500,,2,,
-bar,Bar,Bar,Iced bar,Taşlı bar,2500,,3,,
+bar,Bar,Bar,Iced bar,Taşlı bar,2000,,3,,
 bar_cutout,Bar,Bar,No bar,Barsız,0,yes,1,,
 bar_cutout,Bar,Bar,Bar,Bar,1500,,2,,
 bar_cutout,Bar,Bar,Iced bar,Taşlı bar,3000,,3,,
@@ -11,3 +11,5 @@ stones,Stones,Taş,Without stones,Taşsız,0,yes,1,,
 stones,Stones,Taş,With stones,Taşlı,1500,,2,"This price is for white zirconia stones. Coloured, semi-precious or precious stones cost extra – ask us on WhatsApp.","Bu fiyat beyaz zirkon taş içindir. Renkli, yarı değerli veya değerli taşlar ek ücretlidir – WhatsApp'tan bize sorun."
 stones_cherub,Stones,Taş,Without stones,Taşsız,0,yes,1,,
 stones_cherub,Stones,Taş,With stoned frame,Taşlı çerçeve,4500,,2,"This price is for white zirconia stones. Coloured, semi-precious or precious stones cost extra – ask us on WhatsApp.","Bu fiyat beyaz zirkon taş içindir. Renkli, yarı değerli veya değerli taşlar ek ücretlidir – WhatsApp'tan bize sorun."
+stones_dragon,Stones,Taş,Without stones,Taşsız,0,yes,1,,
+stones_dragon,Stones,Taş,With red stone,Kırmızı taşlı,2000,,2,"The red stone is included. Other coloured, semi-precious or precious stones cost extra – ask us on WhatsApp.","Kırmızı taş fiyata dahildir. Başka renk, yarı değerli veya değerli taşlar ek ücretlidir – WhatsApp'tan bize sorun."
