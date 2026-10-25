@@ -43,9 +43,9 @@ describe("cart rules", () => {
     expect(cartLineSchema.safeParse(line("frame", 1, {}, 11)).success).toBe(false);
     expect(cartLineSchema.safeParse(line("frame", 1, {}, 0)).success).toBe(false);
   });
-  it("teeth supports 1 through 8 only", () => {
-    expect(cartLineSchema.safeParse(line("frame", 8)).success).toBe(true);
-    expect(cartLineSchema.safeParse(line("frame", 9)).success).toBe(false);
+  it("teeth supports 1 through 16 only", () => {
+    expect(cartLineSchema.safeParse(line("frame", 16)).success).toBe(true);
+    expect(cartLineSchema.safeParse(line("frame", 17)).success).toBe(false);
     expect(cartLineSchema.safeParse(line("frame", 0)).success).toBe(false);
   });
   it("addon linked option charges the same as cart line", () => {
