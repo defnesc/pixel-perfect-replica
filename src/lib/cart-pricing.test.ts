@@ -91,7 +91,7 @@ describe("cart rules", () => {
     expect(decodeOrder("")).toBeNull();
   });
   it("rejects a bar group from a different product", () =>
-    expect(calc([line("star", 1, { bar: "Bar" })]).invalid).toBe(true));
+    expect(calc([{ ...line("star"), options: { bar: "Bar" } }]).invalid).toBe(true));
   it("checks current prices with the preserved factor and detects changes", () => {
     const items = [line("frame", 4)];
     const seen = calc(items, 1.03).total;
