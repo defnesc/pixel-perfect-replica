@@ -6,11 +6,13 @@ export function Stepper({
   onChange,
   max,
   label,
+  min = 1,
 }: {
   value: number;
   onChange: (n: number) => void;
   max: number;
   label: string;
+  min?: number;
 }) {
   const t = useT();
   return (
@@ -25,7 +27,7 @@ export function Stepper({
         size="icon"
         className="rounded-full"
         aria-label={t("cart.decrease", { label })}
-        disabled={value <= 1}
+        disabled={value <= min}
         onClick={() => onChange(value - 1)}
       >
         <Minus />
