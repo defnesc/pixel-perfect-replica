@@ -7,7 +7,7 @@ export function CartProvider({children}:{children:ReactNode}) {
  const [items,setItems]=useState<CartLine[]>([]); const [ready,setReady]=useState(false);
  useEffect(()=>{ try { const value=cartSchema.safeParse(JSON.parse(localStorage.getItem(KEY) ?? '[]')); if(value.success) setItems(value.data); } catch {} setReady(true); },[]);
  useEffect(()=>{ if(ready) try {localStorage.setItem(KEY,JSON.stringify(items));} catch {} },[items,ready]);
- const add=(line:CartLine)=>setItems(v=>v.length<100 && cartSchema.safeParse([...v,line]).success ? [...v,line] : v);
+ const add=(line:CartLine)=>{const next={...line,id:crypto.randomUUID()};setItems(v=>v.length<100 && cartSchema.safeParse([...v,next]).success ? [...v,next] : v);};
  return <CartContext.Provider value={{items,add,ready,remove:id=>setItems(v=>v.filter(l=>l.id!==id)),quantity:(id,n)=>{if(Number.isInteger(n) && n>=1 && n<=10)setItems(v=>v.map(l=>l.id===id ? {...l,quantity:n} : l));}}}>{children}</CartContext.Provider>;
 }
 export function useCart(){const value=useContext(CartContext); if(!value)throw new Error('CartProvider required'); return value;}
