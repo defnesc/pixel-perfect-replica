@@ -4,12 +4,10 @@ import { useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
 import { customDesigns } from "@/lib/catalog";
 import { usePrices } from "@/lib/use-prices";
-import { track, waLink, newOrderId, sendToCrm } from "@/lib/order";
 import { CustomEstimator } from "@/components/site/CustomEstimator";
 import { Button } from "@/components/ui/button";
 import { seo } from "@/lib/seo";
 import { ProductCard } from "@/components/site/ProductCard";
-import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
 import { BackButton } from "@/components/site/BackButton";
 
 export const Route = createFileRoute("/$lang/custom")({
@@ -20,8 +18,8 @@ export const Route = createFileRoute("/$lang/custom")({
 function CustomPage() {
   const { lang } = Route.useParams() as { lang: Lang };
   const t = useT();
-  const { data } = useSuspenseQuery(sheetQuery);
-  const { products, fmt, adjusted, factor, cur, rates } = usePrices();
+  useSuspenseQuery(sheetQuery);
+  const { products, fmt, adjusted } = usePrices();
   const goDown = () => document.getElementById("designs")?.scrollIntoView({ behavior: "smooth" });
 
   return (
@@ -31,18 +29,6 @@ function CustomPage() {
         <h1 className="h1-xl">{t("custom2.title")}</h1>
         <CustomEstimator />
         <p className="mt-4 max-w-[45ch] leading-normal text-helper">{t("custom2.intro")}</p>
-        <a
-          href={waLink(data.settings.whatsapp_number, t("msg.customStart"))}
-          target="_blank"
-          rel="noreferrer"
-          onClick={() => {
-            track("custom_quote_click", { source: "custom_page" });
-            sendToCrm({ order_id: newOrderId(), source: "Custom quote", language: lang.toUpperCase(), currency: cur, price_factor: factor, usd_try: rates.usd_try, status: "Custom quote requested" });
-          }}
-          className="btn mt-8 bg-primary text-primary-foreground"
-        >
-          <WhatsAppIcon /> {t("custom2.start")}
-        </a>
         <Button variant="ghost" type="button" onClick={goDown} className="tap mt-16 h-auto flex-col gap-1 label-xs">
           {t("custom2.or")}
           <span className="animate-bob text-lg" aria-hidden>↓</span>

@@ -32,8 +32,12 @@ describe("safe owner-controlled pricing", () => {
   });
   it("applies the same adjustment to the loaded estimator total", () => {
     expect(estimateCustom(BUILTIN.estimator,2,["Detailed","No stones","No engraving"],1.03)).toBe(9290);
-    expect(estimateCustom(BUILTIN.estimator,2,["Fully iced"],1.03)).toBeNull();
-    expect(estimateCustom(BUILTIN.estimator,9,[],1.03)).toBeNull();
+    expect(estimateCustom(BUILTIN.estimator,17,[],1.03)).toBeNull();
+  });
+  it("prices per-tooth estimator rows by the number of teeth", () => {
+    expect(estimateCustom(BUILTIN.estimator,1,["Simple","Fully iced","No engraving"])).toBe(15490);
+    expect(estimateCustom(BUILTIN.estimator,3,["Detailed","Fully iced","No engraving"])).toBe(37490);
+    expect(estimateCustom(BUILTIN.estimator,2,["Simple","No stones","Laser engraving"])).toBe(12990);
   });
   it.each(["", "oops", "0", "999"])("restores an invalid sheet product price %s", async price => {
     vi.stubGlobal("fetch",vi.fn(async (url:string) => new Response(new URL(url).searchParams.get("sheet") === "Products" ? `folder,name,price\nframe,Frame,${price}\n` : "")));

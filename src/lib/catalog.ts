@@ -223,9 +223,13 @@ export function adjustedAddons(
   });
 }
 
-/** Future estimator uses the loaded rows and the same whole-total adjustment. */
+/** A Custom_Estimator row is per tooth when its note starts with "Per tooth". */
+export const isPerTooth = (note: string | undefined) =>
+  (note ?? "").trimStart().toLowerCase().startsWith("per tooth");
+
+/** Instant estimator: loaded rows, per-tooth rows multiply by teeth, same whole-total adjustment. */
 export function estimateCustom(
-  rows: { group: string; option: string; price_add_tl: number }[],
+  rows: { group: string; option: string; price_add_tl: number; note?: string }[],
   teeth: number,
   choices: string[],
   factor = 1,
@@ -247,7 +251,7 @@ export function estimateCustom(
   return adjustPrice(
     first.price_add_tl +
       (teeth - 1) * extra.price_add_tl +
-      selected.reduce((sum, r) => sum + (r?.price_add_tl ?? 0), 0),
+      selected.reduce((sum, r) => sum + (r ? (isPerTooth(r.note) ? r.price_add_tl * teeth : r.price_add_tl) : 0), 0),
     factor,
   );
 }

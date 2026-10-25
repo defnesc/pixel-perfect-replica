@@ -26,7 +26,7 @@ export const SEED: Pick<SheetData, "faq" | "settings"> = {
   ].map(([question_en = "", question_tr = "", answer_en = "", answer_tr = ""], i) => ({ question_en, question_tr, answer_en, answer_tr, sort_order: i + 1 })),
   settings: {
     whatsapp_number: "905053159186",
-    scan_email: "scan@333grillz.com",
+    scan_email: "333artisan@gmail.com",
     currency_symbol: "₺",
     usd_try: 49.69,
     eur_try: 55.68,
