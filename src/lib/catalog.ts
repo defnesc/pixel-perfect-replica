@@ -198,3 +198,14 @@ export function adjustedAddons(addons: Addon[], products: CatalogProduct[], grou
     return [{ ...a, normal_price_tl: full, addon_price_tl: disc30(full) }];
   });
 }
+
+/** Future estimator uses the loaded rows and the same whole-total adjustment. */
+export function estimateCustom(rows: { group: string; option: string; price_add_tl: number }[], teeth: number, choices: string[], factor = 1): number | null {
+  const first = rows.find(r => r.group === "teeth" && r.option === "First tooth");
+  const extra = rows.find(r => r.group === "teeth" && r.option === "Each extra tooth");
+  const limit = rows.find(r => r.group === "limit" && r.option === "Max teeth online");
+  if (!first || !extra || !limit || !Number.isInteger(teeth) || teeth < 1 || teeth > limit.price_add_tl) return null;
+  const selected = choices.map(option => rows.find(r => r.option === option));
+  if (selected.some(r => !r || r.price_add_tl < 0)) return null;
+  return adjustPrice(first.price_add_tl + (teeth - 1) * extra.price_add_tl + selected.reduce((sum, r) => sum + (r?.price_add_tl ?? 0), 0), factor);
+}

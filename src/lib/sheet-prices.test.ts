@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { parseNumber } from "./csv";
 import { BUILTIN, loadSheet, parseSettings } from "./sheet";
-import { adjustPrice, adjustedAddons, findProduct, piecePrice, priceFactor } from "./catalog";
+import { adjustPrice, adjustedAddons, estimateCustom, findProduct, piecePrice, priceFactor } from "./catalog";
 import { safeRates } from "./currency";
 
 afterEach(() => vi.unstubAllGlobals());
@@ -29,6 +29,17 @@ describe("safe owner-controlled pricing", () => {
     expect(adjustPrice(7490,1.03)).toBe(7790);
     expect(adjustPrice(5139.7)).toBe(5190);
     expect(adjustPrice(8700,1.03)).toBe(8990);
+  });
+  it("applies the same adjustment to the loaded estimator total", () => {
+    expect(estimateCustom(BUILTIN.estimator,2,["Detailed","No stones","No engraving"],1.03)).toBe(9290);
+    expect(estimateCustom(BUILTIN.estimator,2,["Fully iced"],1.03)).toBeNull();
+    expect(estimateCustom(BUILTIN.estimator,9,[],1.03)).toBeNull();
+  });
+  it.each(["", "oops", "0", "999"])("restores an invalid sheet product price %s", async price => {
+    vi.stubGlobal("fetch",vi.fn(async (url:string) => new Response(new URL(url).searchParams.get("sheet") === "Products" ? `folder,name,price\nframe,Frame,${price}\n` : "")));
+    const data = await loadSheet();
+    expect(findProduct("frame",data.products)?.price).toBe(4990);
+    expect(data.estimator).toEqual(BUILTIN.estimator);
   });
   it("rejects live rates outside plus/minus 25 percent independently", () => {
     const backup = BUILTIN.settings;
