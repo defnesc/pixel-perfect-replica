@@ -11,8 +11,11 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as LangRouteImport } from './routes/$lang'
+import { Route as CheckRouteImport } from './routes/check'
 import { Route as LangIndexRouteImport } from './routes/$lang.index'
+import { Route as LangCartRouteImport } from './routes/$lang.cart'
 import { Route as LangCatalogRouteImport } from './routes/$lang.catalog'
+import { Route as LangCheckRouteImport } from './routes/$lang.check'
 import { Route as LangClassicsRouteImport } from './routes/$lang.classics'
 import { Route as LangCustomRouteImport } from './routes/$lang.custom'
 import { Route as LangFaqRouteImport } from './routes/$lang.faq'
@@ -36,14 +39,29 @@ const LangRoute = LangRouteImport.update({
   path: '/$lang',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheckRoute = CheckRouteImport.update({
+  id: '/check',
+  path: '/check',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LangIndexRoute = LangIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => LangRoute,
 } as any)
+const LangCartRoute = LangCartRouteImport.update({
+  id: '/cart',
+  path: '/cart',
+  getParentRoute: () => LangRoute,
+} as any)
 const LangCatalogRoute = LangCatalogRouteImport.update({
   id: '/catalog',
   path: '/catalog',
+  getParentRoute: () => LangRoute,
+} as any)
+const LangCheckRoute = LangCheckRouteImport.update({
+  id: '/check',
+  path: '/check',
   getParentRoute: () => LangRoute,
 } as any)
 const LangClassicsRoute = LangClassicsRouteImport.update({
@@ -110,7 +128,10 @@ const LangProductIdRoute = LangProductIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
+  '/check': typeof CheckRoute
+  '/$lang/cart': typeof LangCartRoute
   '/$lang/catalog': typeof LangCatalogRoute
+  '/$lang/check': typeof LangCheckRoute
   '/$lang/classics': typeof LangClassicsRoute
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
@@ -127,7 +148,10 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/check': typeof CheckRoute
+  '/$lang/cart': typeof LangCartRoute
   '/$lang/catalog': typeof LangCatalogRoute
+  '/$lang/check': typeof LangCheckRoute
   '/$lang/classics': typeof LangClassicsRoute
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
@@ -146,7 +170,10 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$lang': typeof LangRouteWithChildren
+  '/check': typeof CheckRoute
+  '/$lang/cart': typeof LangCartRoute
   '/$lang/catalog': typeof LangCatalogRoute
+  '/$lang/check': typeof LangCheckRoute
   '/$lang/classics': typeof LangClassicsRoute
   '/$lang/custom': typeof LangCustomRoute
   '/$lang/faq': typeof LangFaqRoute
@@ -166,7 +193,10 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$lang'
+    | '/check'
+    | '/$lang/cart'
     | '/$lang/catalog'
+    | '/$lang/check'
     | '/$lang/classics'
     | '/$lang/custom'
     | '/$lang/faq'
@@ -183,7 +213,10 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/check'
+    | '/$lang/cart'
     | '/$lang/catalog'
+    | '/$lang/check'
     | '/$lang/classics'
     | '/$lang/custom'
     | '/$lang/faq'
@@ -201,7 +234,10 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$lang'
+    | '/check'
+    | '/$lang/cart'
     | '/$lang/catalog'
+    | '/$lang/check'
     | '/$lang/classics'
     | '/$lang/custom'
     | '/$lang/faq'
@@ -220,6 +256,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LangRoute: typeof LangRouteWithChildren
+  CheckRoute: typeof CheckRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -238,6 +275,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/check': {
+      id: '/check'
+      path: '/check'
+      fullPath: '/check'
+      preLoaderRoute: typeof CheckRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$lang/': {
       id: '/$lang/'
       path: '/'
@@ -245,11 +289,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LangIndexRouteImport
       parentRoute: typeof LangRoute
     }
+    '/$lang/cart': {
+      id: '/$lang/cart'
+      path: '/cart'
+      fullPath: '/$lang/cart'
+      preLoaderRoute: typeof LangCartRouteImport
+      parentRoute: typeof LangRoute
+    }
     '/$lang/catalog': {
       id: '/$lang/catalog'
       path: '/catalog'
       fullPath: '/$lang/catalog'
       preLoaderRoute: typeof LangCatalogRouteImport
+      parentRoute: typeof LangRoute
+    }
+    '/$lang/check': {
+      id: '/$lang/check'
+      path: '/check'
+      fullPath: '/$lang/check'
+      preLoaderRoute: typeof LangCheckRouteImport
       parentRoute: typeof LangRoute
     }
     '/$lang/classics': {
@@ -340,7 +398,9 @@ declare module '@tanstack/react-router' {
 }
 
 interface LangRouteChildren {
+  LangCartRoute: typeof LangCartRoute
   LangCatalogRoute: typeof LangCatalogRoute
+  LangCheckRoute: typeof LangCheckRoute
   LangClassicsRoute: typeof LangClassicsRoute
   LangCustomRoute: typeof LangCustomRoute
   LangFaqRoute: typeof LangFaqRoute
@@ -357,7 +417,9 @@ interface LangRouteChildren {
 }
 
 const LangRouteChildren: LangRouteChildren = {
+  LangCartRoute: LangCartRoute,
   LangCatalogRoute: LangCatalogRoute,
+  LangCheckRoute: LangCheckRoute,
   LangClassicsRoute: LangClassicsRoute,
   LangCustomRoute: LangCustomRoute,
   LangFaqRoute: LangFaqRoute,
@@ -378,6 +440,7 @@ const LangRouteWithChildren = LangRoute._addFileChildren(LangRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LangRoute: LangRouteWithChildren,
+  CheckRoute: CheckRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

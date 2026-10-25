@@ -1,12 +1,17 @@
-import { createFileRoute, Link, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { translate, useT, type Lang } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { findProduct, groupOf, orderTotals, photoUrl, piecePrice, productPhotos, type CatalogProduct } from "@/lib/catalog";
-import { formatForMessage } from "@/lib/currency";
+import { findProduct, photoUrl, productPhotos, type CatalogProduct } from "@/lib/catalog";
+import { Button } from "@/components/ui/button";
+import { ShoppingBag } from "lucide-react";
+import { toast } from "sonner";
+import { useCart } from "@/lib/cart";
+import { addonLine, configuredLine, priceCart } from "@/lib/cart-pricing";
+import { Stepper } from "@/components/site/Stepper";
 import { usePrices } from "@/lib/use-prices";
-import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
+import { waLink } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
 import { Faq } from "@/components/site/Faq";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
@@ -72,198 +77,19 @@ function Gallery({ product, name }: { product: CatalogProduct; name: string }) {
   );
 }
 
-function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) {
-  const t = useT();
-  const { fmt, cur, settings, rates, factor, adjusted, optionGroups, pricedAddons } = usePrices();
-  const name = lang === "tr" ? product.name_tr : product.name;
-  const badge = lang === "tr" ? product.badge_tr : product.badge;
-
-  const colour = groupOf(product, "colour", optionGroups);
-  const bar = groupOf(product, "bar", optionGroups) ?? groupOf(product, "bar_cutout", optionGroups);
-  const stones = groupOf(product, "stones", optionGroups) ?? groupOf(product, "stones_cherub", optionGroups) ?? groupOf(product, "stones_dragon", optionGroups);
-
-  const [colourIdx, setColourIdx] = useState(0);
-  const [barIdx, setBarIdx] = useState(0);
-  const [stonesIdx, setStonesIdx] = useState(0);
-  const [picked, setPicked] = useState<Set<string>>(new Set());
-
-  const optLabel = (g: NonNullable<typeof bar>, i: number) => (lang === "tr" ? g.options[i]?.option_tr : g.options[i]?.option) ?? "";
-  const colourName = colour ? optLabel(colour, colourIdx) : "";
-  const adds = [bar?.options[barIdx]?.price_add_tl ?? 0, stones?.options[stonesIdx]?.price_add_tl ?? 0];
-  const piece = piecePrice(product, adds, factor);
-  const addons = pricedAddons.filter((a) => picked.has(a.addon_id));
-  const { total, savings } = orderTotals(piece, addons);
-
-  const toggleAddon = (aid: string) =>
-    setPicked((s) => {
-      const n = new Set(s);
-      if (n.has(aid)) n.delete(aid);
-      else n.add(aid);
-      return n;
-    });
-
-  const stonesNote = stones
-    ? (lang === "tr"
-        ? stones.options[stonesIdx]?.small_note_tr || stones.options.find((o) => o.small_note_tr)?.small_note_tr
-        : stones.options[stonesIdx]?.small_note || stones.options.find((o) => o.small_note)?.small_note) || ""
-    : "";
-
-  const orderHref = () => {
-    const parts = [`${name} (${[colourName, bar && barIdx > 0 ? optLabel(bar, barIdx) : "", stones && stonesIdx > 0 ? optLabel(stones, stonesIdx) : ""].filter(Boolean).join(", ")})`];
-    for (const a of addons) parts.push(`${lang === "tr" ? a.name_tr : a.name} (${t("msg.addonOff")})`);
-    return waLink(settings.whatsapp_number, `${t("msg.order")} ${parts.join(" + ")}. ${t("msg.total")}: ${formatForMessage(total, cur, lang, rates)}`);
-  };
-
-  const onOrder = () => {
-    const oid = newOrderId();
-    track("create_order_click", { product: product.folder });
-    sendToCrm({
-      price_factor: factor, usd_try: rates.usd_try, order_id: oid, source: "Website", language: lang.toUpperCase(), product: product.name,
-      colour: colourName, bar: bar ? optLabel(bar, barIdx) : "", stones: stones ? optLabel(stones, stonesIdx) : "",
-      addons: addons.map((a) => a.name).join(", "), estimated_price: total, currency: cur, status: "1 – Order created on website",
-    });
-  };
-
-  return (
-    <main className="mx-auto max-w-6xl pb-16 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:pt-6">
-      <div className="px-4 pt-2 md:col-span-2 md:px-0 md:pt-0">
-          <Link to={lang === "tr" ? "/$lang/klasikler" : "/$lang/classics"} params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
-      </div>
-      <Gallery product={product} name={name} />
-
-      <div className="px-4 md:px-0">
-        <div className="mt-2 flex flex-wrap items-center gap-3">
-          <h1 className="h1-xl">{name}</h1>
-          {badge && <span className="rounded-full bg-primary px-3 py-1 font-mono text-[11px] uppercase tracking-[0.04em] text-primary-foreground">{badge}</span>}
-        </div>
-        <p className="mt-4 font-mono text-[15px] uppercase tracking-[0.04em]">
-          {product.compare_at_price && <span className="mr-2 text-helper line-through">{fmt(adjusted(product.compare_at_price))}</span>}
-          {fmt(piece)}
-        </p>
-        {product.folder === "classic-cap-and-frame-duo" && product.compare_at_price && (
-          <p className="helper mt-1">{t("product.duoSave", { x: fmt(adjusted(product.compare_at_price) - adjusted(product.price)) })}</p>
-        )}
-        <p className="helper mt-1">{t("product.material")}</p>
-
-        <Question id="q-colour" title={t("product.colour")}>
-          <div className="grid grid-cols-2 gap-2">
-            {colour?.options.map((o, i) => (
-              <button key={o.option} type="button" onClick={() => setColourIdx(i)} aria-pressed={colourIdx === i} className={`pill ${colourIdx === i ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
-                {lang === "tr" ? o.option_tr : o.option}
-              </button>
-            ))}
-          </div>
-          <p className="helper mt-3">{t("product.colourNote")}</p>
-        </Question>
-
-        {bar && (
-          <Question id="q-bar" title={lang === "tr" ? bar.label_tr : bar.label}>
-            <div className="grid gap-2">
-              {bar.options.map((o, i) => (
-                <Option key={o.option} selected={barIdx === i} onSelect={() => setBarIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(piecePrice(product, [o.price_add_tl, adds[1] ?? 0], factor) - piecePrice(product, [0, adds[1] ?? 0], factor))}` : undefined} />
-              ))}
-            </div>
-          </Question>
-        )}
-
-        {stones && (
-          <Question id="q-stones" title={lang === "tr" ? stones.label_tr : stones.label}>
-            <div className="grid gap-2">
-              {stones.options.map((o, i) => (
-                <Option key={o.option} selected={stonesIdx === i} onSelect={() => setStonesIdx(i)} label={lang === "tr" ? o.option_tr : o.option} note={o.price_add_tl > 0 ? `+${fmt(piecePrice(product, [adds[0] ?? 0, o.price_add_tl], factor) - piecePrice(product, [adds[0] ?? 0, 0], factor))}` : undefined} />
-              ))}
-            </div>
-            {stonesNote && <p className="helper mt-3">{stonesNote}</p>}
-          </Question>
-        )}
-
-        <Question id="q-addons" title={t("addon.title")}>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {pricedAddons.map((a) => {
-              const on = picked.has(a.addon_id);
-              const img = photoUrl(`${a.photo_folder}-01.jpg`);
-              return (
-                <button key={a.addon_id} type="button" onClick={() => toggleAddon(a.addon_id)} aria-pressed={on} className={`tap overflow-hidden rounded-[20px] border text-left ${on ? "border-primary" : "border-foreground/20"}`}>
-                  {img ? <img src={img} alt="" loading="lazy" width={512} height={512} className="aspect-square w-full object-cover" /> : <div className="flex aspect-square w-full items-center justify-center bg-surface label-xs text-helper">333</div>}
-                  <span className="block p-3">
-                    <span className="block text-[13px] font-semibold leading-snug">{lang === "tr" ? a.name_tr : a.name}</span>
-                    <span className="mt-1 block font-mono text-[12px] uppercase tracking-[0.04em]">
-                      <span className="mr-1.5 text-helper line-through">{fmt(a.normal_price_tl)}</span>
-                      {fmt(a.addon_price_tl)}
-                    </span>
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </Question>
-
-        <div className="mt-10 rounded-[20px] bg-surface p-5">
-          <div className="flex items-baseline justify-between gap-4">
-            <span className="label-xs">{t("product.total")}</span>
-            <span className="font-mono text-lg uppercase tracking-[0.04em]">{fmt(total)}</span>
-          </div>
-          {savings > 0 && <p className="mt-1 text-right font-mono text-[13px] uppercase tracking-[0.04em] text-success">{t("product.save", { x: fmt(savings) })}</p>}
-          {cur !== "TRY" && <p className="mt-1 text-right text-[12px] text-helper">{t("price.approx")}</p>}
-          <a href={orderHref()} target="_blank" rel="noreferrer" onClick={onOrder} className="btn mt-4 w-full bg-success text-success-foreground">
-            <WhatsAppIcon /> {t("cta.order")}
-          </a>
-        </div>
-
-        <div className="mt-10"><Faq /></div>
-      </div>
-    </main>
-  );
-}
-
-function CustomProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) {
-  const t = useT();
-  const { fmt, settings, adjusted, optionGroups, factor, rates } = usePrices();
-  const name = lang === "tr" ? product.name_tr : product.name;
-  const note = lang === "tr" ? product.price_note_tr : product.price_note;
-  const colour = groupOf(product, "colour", optionGroups);
-  const [colourIdx, setColourIdx] = useState(0);
-  const colourName = (lang === "tr" ? colour?.options[colourIdx]?.option_tr : colour?.options[colourIdx]?.option) ?? "";
-
-  const quoteHref = waLink(settings.whatsapp_number, t("msg.quote", { name, colour: colourName }));
-  const onQuote = () => {
-    track("custom_quote_click", { product: product.folder });
-    sendToCrm({ price_factor: factor, usd_try: rates.usd_try, estimated_price: adjusted(product.price), order_id: newOrderId(), source: "Custom quote", language: lang.toUpperCase(), product: product.name, colour: colourName, status: "1 – Order created on website" });
-  };
-
-  return (
-    <main className="mx-auto max-w-6xl pb-16 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:pt-6">
-      <div className="px-4 pt-2 md:col-span-2 md:px-0 md:pt-0">
-          <Link to="/$lang/custom" params={{ lang }} className="tap inline-flex items-center label-xs text-subtle">{t("product.back")}</Link>
-      </div>
-      <Gallery product={product} name={name} />
-
-      <div className="px-4 md:px-0">
-        <h1 className="mt-2 h1-xl">{name}</h1>
-        <p className="mt-4 font-mono text-[15px] uppercase tracking-[0.04em]">
-          {t("card.approx", { price: fmt(adjusted(product.price)) })}{note ? ` · ${note}` : ""}
-        </p>
-        <p className="helper mt-1">{t("product.material")}</p>
-
-        <Question id="q-colour" title={t("product.colour")}>
-          <div className="grid grid-cols-2 gap-2">
-            {colour?.options.map((o, i) => (
-              <button key={o.option} type="button" onClick={() => setColourIdx(i)} aria-pressed={colourIdx === i} className={`pill ${colourIdx === i ? "!border-primary bg-primary text-primary-foreground" : ""}`}>
-                {lang === "tr" ? o.option_tr : o.option}
-              </button>
-            ))}
-          </div>
-          <p className="helper mt-3">{t("product.colourNote")}</p>
-        </Question>
-
-        <p className="helper mt-6">{t("product.estimateNote")}</p>
-
-        <a href={quoteHref} target="_blank" rel="noreferrer" onClick={onQuote} className="btn mt-6 w-full bg-success text-success-foreground">
-          <WhatsAppIcon /> {t("cta.quote")}
-        </a>
-
-        <div className="mt-10"><Faq /></div>
-      </div>
-    </main>
-  );
+function ClassicsProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) { return <ProductOrder lang={lang} product={product} />; }
+function CustomProduct({ lang, product }: { lang: Lang; product: CatalogProduct }) { return <ProductOrder lang={lang} product={product} />; }
+function ProductOrder({lang,product}:{lang:Lang;product:CatalogProduct}) {
+ const t=useT(); const navigate=useNavigate(); const cart=useCart(); const {fmt,factor,products,optionGroups,addons,adjusted,cur,settings}=usePrices();
+ const [colour,setColour]=useState<'White'|'Yellow'>('White'); const [choices,setChoices]=useState<Record<string,string>>({});const [teeth,setTeeth]=useState(1);
+ const groups=optionGroups.filter(g=>product.option_groups.includes(g.group_id));
+ const item=configuredLine(product,optionGroups,colour,choices,teeth); const priced=priceCart([item],products,optionGroups,factor);const total=priced.total+priced.estimated;
+ const name=lang==='tr'?product.name_tr:product.name;const badge=lang==='tr'?product.badge_tr:product.badge;
+ const add=(open=false)=>{cart.add(item);if(open)navigate({to:'/$lang/cart',params:{lang}});else toast.success(t('cart.added'),{action:{label:t('cart.view'),onClick:()=>navigate({to:'/$lang/cart',params:{lang}})}});};
+ return <main className="mx-auto max-w-6xl pb-16 md:grid md:grid-cols-2 md:gap-10 md:px-4 md:pt-6"><div className="px-4 pt-2 md:col-span-2 md:px-0 md:pt-0"><Link to={lang==='tr'?'/$lang/katalog':'/$lang/catalog'} params={{lang}} className="tap inline-flex items-center label-xs text-subtle">{t('product.back')}</Link></div><Gallery product={product} name={name}/><div className="px-4 md:px-0"><div className="mt-2 flex flex-wrap items-center gap-3"><h1 className="h1-xl">{name}</h1>{badge && <span className="rounded-full bg-primary px-3 py-1 font-mono text-xs text-primary-foreground">{badge}</span>}</div><p className="mt-4 font-mono text-[15px]">{product.compare_at_price && <span className="mr-2 text-helper line-through">{fmt(adjusted(product.compare_at_price))}</span>}{product.section==='custom'?t('card.approx',{price:fmt(total)}):fmt(total)}{product.section==='custom' && <span> · {lang==='tr'?product.price_note_tr:product.price_note}</span>}</p>{product.per_tooth && <p className="helper mt-2">{t('product.perTooth',{x:fmt(Math.round(total/teeth))})}</p>}{product.folder==='classic-cap-and-frame-duo' && product.compare_at_price && <p className="helper mt-1">{t('product.duoSave',{x:fmt(adjusted(product.compare_at_price)-adjusted(product.price))})}</p>}<p className="helper mt-1">{t('product.material')}</p>
+ <Question id="q-colour" title={t('product.colour')}><div className="grid grid-cols-2 gap-2">{(['White','Yellow'] as const).map(c=><Button key={c} type="button" variant="outline" className={`h-12 rounded-full ${colour===c?'border-primary bg-primary text-primary-foreground':''}`} aria-pressed={colour===c} onClick={()=>setColour(c)}>{t(`color.${c}`)}</Button>)}</div><p className="helper mt-3">{t('product.colourNote')}</p></Question>
+ {product.per_tooth && <Question id="q-teeth" title={t(product.placement==='gap'?'product.howManyGaps':'product.howManyTeeth')}><Stepper value={teeth} onChange={setTeeth} max={8} label={t(product.placement==='gap'?'product.howManyGaps':'product.howManyTeeth')}/><a className="helper mt-3 block underline" target="_blank" rel="noreferrer" href={waLink(settings.whatsapp_number,t('msg.moreTeeth',{name}))}>{t('product.moreTeeth')}</a></Question>}
+ {groups.filter(g=>g.group_id!=='colour' && product.section==='classics').map(g=>{const chosen=item.options[g.group_id];const note=g.options.find(o=>o.option===chosen);return <Question key={g.group_id} id={`q-${g.group_id}`} title={lang==='tr'?g.label_tr:g.label}><div role="radiogroup" aria-label={lang==='tr'?g.label_tr:g.label} className="space-y-2">{g.options.map(o=>{const next=priceCart([{...item,options:{...item.options,[g.group_id]:o.option}}],products,optionGroups,factor);const base=priceCart([{...item,options:{...item.options,[g.group_id]:g.options.find(v=>v.isDefault)?.option ?? ''}}],products,optionGroups,factor);const difference=next.total-base.total;return <Option key={o.option} selected={chosen===o.option} onSelect={()=>setChoices(v=>({...v,[g.group_id]:o.option}))} label={lang==='tr'?o.option_tr:o.option} note={difference>0?`+${fmt(difference)}`:undefined}/>;})}</div>{(lang==='tr'?note?.small_note_tr:note?.small_note) && <p className="helper mt-3">{lang==='tr'?note?.small_note_tr:note?.small_note}</p>}</Question>;})}
+ {product.section==='classics' && <Question id="q-addons" title={t('addon.title')}><div className="grid grid-cols-2 gap-2 sm:grid-cols-3">{addons.filter(a=>!product.per_tooth || a.product!==product.folder).map(a=>{const line=addonLine(a,products,optionGroups,colour);if(!line)return null;const combined=priceCart([...cart.items,item,line],products,optionGroups,factor);const charge=combined.lines[combined.lines.length-1];const img=photoUrl(`${a.photo_folder}-01.jpg`);return <Button key={a.addon_id} variant="outline" className="h-auto flex-col items-stretch gap-0 overflow-hidden whitespace-normal rounded-[20px] p-0 text-left" onClick={()=>{cart.add(line);toast.success(t('cart.added'),{action:{label:t('cart.view'),onClick:()=>navigate({to:'/$lang/cart',params:{lang}})}});}}>{img?<img src={img} alt="" className="aspect-square w-full object-cover" loading="lazy"/>:<div className="flex aspect-square items-center justify-center bg-surface text-helper">333</div>}<span className="block p-3"><span className="block text-[13px]">{lang==='tr'?a.name_tr:a.name}</span><span className="mt-1 block font-mono text-xs">{charge && charge.savings>0 && <span className="mr-1 text-helper line-through">{fmt(charge.full)}</span>}{fmt(charge?.total ?? 0)}</span></span></Button>;})}</div></Question>}
+ {product.section==='custom' && <p className="helper mt-6">{t('product.estimateNote')}</p>}<div className="mt-8 border-t border-border pt-5"><div className="flex justify-between font-mono"><span>{t(product.section==='custom'?'cart.estimated':'product.total')}</span><span>{fmt(total)}</span></div>{cur!=='TRY' && <p className="helper mt-2">{t('price.approx')}</p>}<Button variant="outline" className="mt-4 h-auto min-h-12 w-full whitespace-normal rounded-full py-3" onClick={()=>add()}><ShoppingBag/>{t('cart.add')}</Button><Button className="mt-3 h-auto min-h-12 w-full whitespace-normal rounded-full bg-success py-3 text-success-foreground hover:bg-success/90" onClick={()=>add(true)}><WhatsAppIcon/>{t('cta.order')}</Button></div><div className="mt-10"><Faq/></div></div></main>;
 }
