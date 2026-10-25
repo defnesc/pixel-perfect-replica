@@ -4,9 +4,10 @@ export function waLink(number: string, text: string) {
   return `https://wa.me/${number.replace(/\D/g, "")}?text=${encodeURIComponent(text)}`;
 }
 
-/** POST to the CRM webhook (Google Apps Script / Make). Set VITE_CRM_WEBHOOK_URL. Fire-and-forget. */
+const CRM_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbwZQj8t6DtY7NUOBzhxknGDrTqarnfExhsPOEvpKhB0VstaNp1ZjXJMQhq7hLVT17Fn/exec";
+/** Public order-log endpoint; fire-and-forget, without customer personal data. */
 export function sendToCrm(row: Record<string, unknown>) {
-  const url = import.meta.env["VITE_CRM_WEBHOOK_URL"] as string | undefined;
+  const url = CRM_WEBHOOK_URL || import.meta.env["VITE_CRM_WEBHOOK_URL"] as string | undefined;
   if (!url) return;
   const body = JSON.stringify({ created_at: new Date().toISOString(), ...row });
   fetch(url, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body }).catch((e) =>
