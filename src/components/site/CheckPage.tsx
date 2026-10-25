@@ -1,12 +1,12 @@
 import { CircleCheck, TriangleAlert } from "lucide-react";
 import { useLang, useT } from "@/i18n";
 import { usePrices } from "@/lib/use-prices";
-import { decodeOrder, priceCart } from "@/lib/cart-pricing";
+import { decodeOrder, priceCart, raisedSinceOrder } from "@/lib/cart-pricing";
 import { CartLines } from "./CartLines";
 export function CheckPage({ encoded }: { encoded: string }) {
   const t = useT(),
     lang = useLang();
-  const { products, optionGroups, fmt, cur } = usePrices();
+  const { products, optionGroups, fmt, cur, factor, estimator } = usePrices();
   const order = decodeOrder(encoded);
   if (!order)
     return (
@@ -17,7 +17,7 @@ export function CheckPage({ encoded }: { encoded: string }) {
         </p>
       </main>
     );
-  const priced = priceCart(order.items, products, optionGroups, order.factor);
+  const priced = priceCart(order.items, products, optionGroups, order.factor, estimator);
   const correct =
     !priced.invalid && priced.total === order.total && priced.estimated === order.estimated;
   return (
@@ -30,6 +30,10 @@ export function CheckPage({ encoded }: { encoded: string }) {
           timeStyle: "short",
         }).format(new Date(order.date))}
       </time>
+      <div className={`mt-3 text-sm ${raisedSinceOrder(order.date, order.factor, factor) ? "text-destructive" : "text-helper"}`}>
+        <p>{t("check.level", { saved: order.factor.toFixed(2), today: factor.toFixed(2) })}</p>
+        {raisedSinceOrder(order.date, order.factor, factor) && <p className="mt-1">{t("check.raised")}</p>}
+      </div>
       <div
         role="status"
         className={`my-8 flex items-start gap-3 border-l-4 p-4 ${correct ? "border-success bg-success/10 text-success" : "border-destructive bg-destructive/10 text-destructive"}`}

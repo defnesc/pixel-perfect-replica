@@ -17,7 +17,7 @@ import {
 } from "@/lib/cart-pricing";
 import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
 import { formatForMessage } from "@/lib/currency";
-import { CartLines, lineDescription } from "./CartLines";
+import { CartLines, lineDescription, cartLineName } from "./CartLines";
 import { Option, Question } from "./Option";
 import { WhatsAppIcon } from "./WhatsAppIcon";
 export function CartPage() {
@@ -25,12 +25,12 @@ export function CartPage() {
     lang = useLang();
   const cart = useCart();
   const prices = usePrices();
-  const { products, optionGroups, factor, fmt, cur, rates, settings } = prices;
+  const { products, optionGroups, factor, fmt, cur, rates, settings, estimator } = prices;
   const [answers, setAnswers] = useState<DraftAnswers>({});
   const [highlight, setHighlight] = useState<string>();
   const [error, setError] = useState(false);
   const [order, setOrder] = useState<OrderRecord | null>(null);
-  const priced = priceCart(cart.items, products, optionGroups, factor);
+  const priced = priceCart(cart.items, products, optionGroups, factor, estimator);
   const complete = answersSchema.safeParse(answers).success;
   const set = (key: keyof DraftAnswers, value: unknown) => {
     setAnswers((a) => ({ ...a, [key]: value }));
@@ -54,7 +54,7 @@ export function CartPage() {
       id: newOrderId(),
       date: new Date().toISOString(),
       lang,
-      items: cart.items.map((l) => ({ ...l, options: { ...l.options } })),
+      items: cart.items.map((l) => ({ ...l, options: { ...l.options }, estimate: l.estimate ? { ...l.estimate } : undefined })),
       answers: valid.data,
       factor,
       total: priced.total,
@@ -63,7 +63,7 @@ export function CartPage() {
     setOrder(next);
     track("create_order_click", { order_id: next.id });
   };
-  const orderPrices = order ? priceCart(order.items, products, optionGroups, order.factor) : priced;
+  const orderPrices = order ? priceCart(order.items, products, optionGroups, order.factor, estimator) : priced;
   const checkUrl = order
     ? `${typeof window !== "undefined" ? window.location.origin : ""}/check?o=${encodeOrder(order)}`
     : "";
@@ -73,7 +73,7 @@ export function CartPage() {
         `${t("msg.orderNew")} #${order.id}`,
         ...orderPrices.lines.map(
           (l) =>
-            `${l.item.quantity * l.item.teeth}× ${lang === "tr" ? l.product?.name_tr : l.product?.name} (${lineDescription(l.item, optionGroups, lang)})${l.product?.per_tooth ? ` – ${t(l.product.placement === "gap" ? "cart.gaps" : "cart.teeth", { n: l.item.teeth * l.item.quantity })}` : ""}${l.savings > 0 ? ` (−%${l.product?.extra_piece_discount})` : ""}${l.product?.section === "custom" ? ` [${t("cart.estimate")}]` : ""} – ${formatForMessage(l.total, cur, lang, rates)}`,
+            `${l.item.kind === "estimate" ? l.item.quantity : l.item.quantity * l.item.teeth}× ${cartLineName(l.item, l.product, lang)}${l.item.addonOf ? ` [${t("addon.label")}]` : ""} (${lineDescription(l.item, optionGroups, lang)})${l.product?.per_tooth || l.item.kind === "estimate" ? ` – ${t(l.product.placement === "gap" ? "cart.gaps" : "cart.teeth", { n: l.item.teeth * l.item.quantity })}` : ""}${l.savings > 0 ? ` (−%${l.product?.extra_piece_discount})` : ""}${l.product?.section === "custom" || l.item.kind === "estimate" ? ` [${t("cart.estimate")}]` : ""} – ${formatForMessage(l.total, cur, lang, rates)}`,
         ),
         `${t("order.scan")}: ${t(`order.scan.${order.answers.scan}`)}`,
         `${t("order.delivery")}: ${t(`order.delivery.${order.answers.delivery}`)}`,
@@ -137,7 +137,10 @@ export function CartPage() {
             groups={optionGroups}
             fmt={fmt}
             quantity={cart.quantity}
-            remove={cart.remove}
+            remove={(id) => {
+              const count = cart.items.filter((l) => l.addonOf === id).reduce((n, l) => n + l.quantity, 0);
+              if (!count || window.confirm(t("addon.removeConfirm", { n: count }))) cart.remove(id);
+            }}
           />
           <div className="border-y border-border py-6">
             <div className="flex justify-between font-mono text-lg">
@@ -325,7 +328,12 @@ export function CartPage() {
                     href={waLink(settings.whatsapp_number, message)}
                     target="_blank"
                     rel="noreferrer"
-                    onClick={send}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      const opened = window.open(waLink(settings.whatsapp_number, message), "_blank");
+                      if (opened) { opened.opener = null; send(); cart.clear(); }
+                      else { window.location.assign(waLink(settings.whatsapp_number, message)); send(); cart.clear(); }
+                    }}
                   >
                     <WhatsAppIcon />
                     {t("order.send")}
