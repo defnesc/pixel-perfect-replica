@@ -52,7 +52,7 @@ export const orderSchema = z.object({
   id: z.string().regex(/^GZ-\d{4}$/),
   date: z.string().datetime(),
   lang: z.enum(["en", "tr"]),
-  items: cartSchema.min(1),
+  items: cartSchema.refine((items) => items.length > 0),
   answers: answersSchema,
   factor: z.number().finite().min(1).max(100),
   total: z.number().finite().nonnegative(),
