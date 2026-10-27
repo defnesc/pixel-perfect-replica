@@ -20,3 +20,4 @@
 
 - Keep cart state in the localized CartProvider with validated, failure-safe localStorage. Check URLs contain validated, URL-safe order snapshots and preserve the order-time factor for current-sheet comparison; they are not authenticated order records. /check redirects to the localized noindex check route.
 - Use pure cart-actions helpers for configuration matching and linked add-on operations; addonOf is preserved in snapshots so counters and cascading removal share one source of truth.
+- Keep gift-card shipping totals and custom-order detection in pure shared helpers so UI and order payload rules can be verified without changing catalog pricing.

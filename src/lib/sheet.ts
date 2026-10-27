@@ -7,7 +7,7 @@ import estimatorCsv from "@/data/custom_estimator.csv?raw";
 export { parseCsv } from "./csv";
 
 export interface FaqRow { question_en: string; question_tr: string; answer_en: string; answer_tr: string; sort_order: number }
-export interface Settings { whatsapp_number: string; scan_email: string; currency_symbol: string; usd_try: number; eur_try: number; auto_rates: boolean; foreign_round_up_to: number; price_base_usd_try: number; auto_price_adjust: boolean; price_step_percent: number }
+export interface Settings { whatsapp_number: string; scan_email: string; currency_symbol: string; usd_try: number; eur_try: number; auto_rates: boolean; foreign_round_up_to: number; price_base_usd_try: number; auto_price_adjust: boolean; price_step_percent: number; gift_card_shipping_tl: number; gift_card_free_shipping_from: number }
 export interface EstimatorRow { group: string; option: string; option_tr: string; price_add_tl: number; note: string }
 export interface SheetData { faq: FaqRow[]; settings: Settings; products: CatalogProduct[]; optionGroups: OptionGroup[]; addons: Addon[]; estimator: EstimatorRow[] }
 export const SHEET_ID = "13aChzrGNnNUg2qpmoz6qEQJjQpfcbz9VblsaRyRIkjI";
@@ -26,6 +26,7 @@ export function parseSettings(row: Row, backup = SEED.settings): Settings {
     usd_try: positive("usd_try"), eur_try: positive("eur_try"),
     auto_rates: flag("auto_rates"), foreign_round_up_to: positive("foreign_round_up_to"),
     price_base_usd_try: positive("price_base_usd_try"), auto_price_adjust: flag("auto_price_adjust"), price_step_percent: positive("price_step_percent"),
+    gift_card_shipping_tl: parseNumber(row["gift_card_shipping_tl"]) === 0 ? 0 : positive("gift_card_shipping_tl"), gift_card_free_shipping_from: positive("gift_card_free_shipping_from"),
   };
 }
 const parseEstimator = (rows: Row[]): EstimatorRow[] => rows.map(r => ({ group: r["group"] ?? "", option: r["option"] ?? "", option_tr: r["option_tr"] ?? "", price_add_tl: parseNumber(r["price_add_tl"]) ?? 0, note: r["note"] ?? "" }));

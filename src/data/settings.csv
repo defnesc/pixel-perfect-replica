@@ -1,2 +1,2 @@
-whatsapp_number,scan_email,usd_try,eur_try,auto_rates,foreign_round_up_to,price_base_usd_try,auto_price_adjust,price_step_percent
-905053159186,333artisan@gmail.com,49.69,55.68,yes,5,49.69,yes,3
+whatsapp_number,scan_email,usd_try,eur_try,auto_rates,foreign_round_up_to,price_base_usd_try,auto_price_adjust,price_step_percent,gift_card_shipping_tl,gift_card_free_shipping_from
+905053159186,333artisan@gmail.com,49.69,55.68,yes,5,49.69,yes,3,150,10000
