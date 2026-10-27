@@ -36,7 +36,7 @@ const ymd = (y: number, m: number, d: number) => {
 };
 export function istanbulDay(now: Date): number {
   const p = Object.fromEntries(new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Istanbul", year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(now).map(x => [x.type, x.value]));
-  return ymd(Number(p.year), Number(p.month), Number(p.day)) ?? Math.floor(now.getTime() / DAY);
+  return ymd(Number(p["year"]), Number(p["month"]), Number(p["day"])) ?? Math.floor(now.getTime() / DAY);
 }
 /** Accepts 2027-02-14, 14.02.2027, Sheets M/D/YYYY, Date(2027,1,14) or a serial number. */
 export function parseDay(value: string | undefined): number | null {
