@@ -24,3 +24,7 @@
 - [x] Add reference-photo messaging and first next step for custom orders only.
 - [x] Add gift amount types, delivery, sheet-controlled shipping, validity FAQ and purchase date.
 - [x] Verify concrete pricing rules and gift/custom order flows (70 tests; mobile gift shipping/unknown amounts and estimator-to-cart order/check flow, desktop English gift page; CRM payloads verified without private log read-back).
+
+# Order calendar
+- [x] Sheet-driven batch, delivery and special-day box on Classics product pages, cart and Classics list (tests in calendar.test.ts).
+- [ ] Add the five new Settings keys and the Occasions tab to the live Google Sheet (owner action; site uses backups until then).
