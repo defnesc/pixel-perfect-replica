@@ -13,7 +13,6 @@ import { addonLine, configuredLine, priceCart } from "@/lib/cart-pricing";
 import { Stepper } from "@/components/site/Stepper";
 import { usePrices } from "@/lib/use-prices";
 import { OrderCalendar } from "@/components/site/OrderCalendar";
-import { waLink } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
 import { Faq } from "@/components/site/Faq";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
