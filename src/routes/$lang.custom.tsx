@@ -27,8 +27,8 @@ function CustomPage() {
       <BackButton />
       <section className="flex min-h-[60svh] flex-col items-center justify-center text-center">
         <h1 className="h1-xl">{t("custom2.title")}</h1>
-        <CustomEstimator />
         <p className="mt-4 max-w-[45ch] leading-normal text-helper">{t("custom2.intro")}</p>
+        <CustomEstimator />
         <Button variant="ghost" type="button" onClick={goDown} className="tap mt-16 h-auto flex-col gap-1 label-xs">
           {t("custom2.or")}
           <span className="animate-bob text-lg" aria-hidden>↓</span>

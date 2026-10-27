@@ -1,44 +1,51 @@
-import { useSuspenseQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { translate, useLang, useT } from "@/i18n";
-import { sheetQuery } from "@/lib/sheet";
-import { convertToTry, CURRENCY_SYMBOL, formatForMessage, formatPrice, useCurrency, useLiveRates } from "@/lib/currency";
+import { useT, useLang } from "@/i18n";
+import { usePrices } from "@/lib/use-prices";
+import { convertToTry, CURRENCY_SYMBOL, formatForMessage } from "@/lib/currency";
 import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
-import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
+import { GIFT_AMOUNTS, GIFT_UNPRICED, giftTotals, giftPurchaseDate, type GiftDelivery } from "@/lib/gift-card";
+import { formatTl } from "@/lib/catalog";
+import { Button } from "@/components/ui/button";
+import { Option } from "./Option";
+import { Stepper } from "./Stepper";
+import { WhatsAppIcon } from "./WhatsAppIcon";
 import giftImg from "@/assets/gift-card.jpg";
-
-/** Gift card amounts in TRY. */
-export const GIFT_AMOUNTS = [5000, 8000, 10000, 12000, 15000];
+export { GIFT_AMOUNTS } from "@/lib/gift-card";
 
 export function GiftCardPage() {
-  const lang = useLang();
-  const t = useT();
-  const cur = useCurrency();
-  const { data } = useSuspenseQuery(sheetQuery);
-  const rates = useLiveRates(data.settings);
-  const [choice, setChoice] = useState<string>(String(GIFT_AMOUNTS[0]));
+  const lang = useLang(), t = useT();
+  const { cur, rates, fmt, settings } = usePrices();
+  const [choice, setChoice] = useState("design");
   const [custom, setCustom] = useState("");
   const [qty, setQty] = useState(1);
+  const [delivery, setDelivery] = useState<GiftDelivery>("digital");
   const [warn, setWarn] = useState(false);
-
+  const unpriced = GIFT_UNPRICED.some(value => value === choice);
   const customNum = Number(custom.replace(",", "."));
-  const unitTry = choice === "custom" ? (customNum > 0 ? convertToTry(customNum, cur, rates) : null) : Number(choice);
-  const fmt = (n: number) => formatPrice(n, cur, lang, rates, data.settings.currency_symbol);
+  const unitTry = unpriced ? null : choice === "custom" ? (Number.isFinite(customNum) && customNum > 0 ? convertToTry(customNum, cur, rates) : null) : Number(choice);
+  const { shipping, total } = giftTotals(unitTry, qty, delivery, settings);
+  const shippingText = (value: number) => value === 0 ? t("gift.freeShipping") : t("gift.shippingFee", { price: formatTl(value) });
+  const printedFee = giftTotals(unitTry, qty, "printed", settings).shipping;
+  const totalText = total === null ? t("gift.decided") : fmt(total);
 
-  const send = (e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!unitTry) { e.preventDefault(); setWarn(true); return; }
-    const id = newOrderId();
-    const tr = (k: string) => translate(lang, k);
+  const send = (event: React.MouseEvent<HTMLAnchorElement>) => {
+    if (!unpriced && (!unitTry || !Number.isFinite(unitTry))) { event.preventDefault(); setWarn(true); return; }
+    const id = newOrderId(), date = new Date();
+    const piece = choice === "one_tooth" || choice === "star" ? t(`gift.piece.${choice}`) : undefined;
+    const amountText = unpriced ? piece ? t("gift.msg.piece", { piece }) : t("gift.msg.design") : formatForMessage(unitTry ?? 0, cur, lang, rates);
     const msg = [
-      `${tr("msg.order")} #${id}`,
-      `${tr("msg.product")}: ${tr("gift.title")}`,
-      `${tr("msg.amount")}: ${formatForMessage(unitTry, cur, lang, rates)}`,
-      `${tr("msg.qty")}: ${qty}`,
-      `${tr("msg.total")}: ${formatForMessage(unitTry * qty, cur, lang, rates)}`,
+      `${t("msg.order")} #${id}`,
+      `${t("msg.product")}: ${t("gift.title")}`,
+      `${t("gift.date")}: ${giftPurchaseDate(date)}`,
+      `${t("msg.amount")}: ${amountText}`,
+      `${t("msg.qty")}: ${qty}`,
+      `${t("order.delivery")}: ${delivery === "digital" ? t("gift.msg.digital") : t("gift.msg.printed", { shipping: shippingText(shipping) })}`,
+      `${t("msg.total")}: ${total === null ? t("gift.decided") + (shipping ? ` (+${formatTl(shipping)} ${t("gift.shipping")})` : "") : formatForMessage(total, cur, lang, rates)}`,
+      ...(cur !== "TRY" && total !== null ? [t("price.approx")] : []),
     ].join("\n");
-    track("create_order_click", { product: "gift-card", value: unitTry * qty });
-    sendToCrm({ order_id: id, source: "Gift card", language: lang.toUpperCase(), product: "Gift card", quantity: qty, currency: cur, estimated_price: unitTry * qty, status: "1 – Order created on website" });
-    e.currentTarget.href = waLink(data.settings.whatsapp_number, msg);
+    track("create_order_click", { product: "gift-card", value: total ?? 0 });
+    sendToCrm({ order_id: id, source: "Gift card", language: lang.toUpperCase(), product: "Gift card", quantity: qty, currency: cur, estimated_price: total ?? 0, amount_type: unpriced ? "to_be_decided" : choice === "custom" ? "custom" : "fixed", ...(piece ? { piece } : {}), delivery, shipping_tl: shipping, status: "1 – Order created on website" });
+    event.currentTarget.href = waLink(settings.whatsapp_number, msg);
   };
 
   return (
@@ -46,42 +53,41 @@ export function GiftCardPage() {
       <div className="md:sticky md:top-20 md:self-start">
         <img src={giftImg} alt={t("gift.title")} width={1024} height={1280} className="aspect-[4/5] w-full object-cover md:rounded-[20px]" />
       </div>
-      <div className="px-4 pt-6 md:px-0 md:pt-0">
+      <div className="min-w-0 px-4 pt-6 md:px-0 md:pt-0">
         <p className="label-xs text-helper">333 GRILLZ</p>
-        <h1 className="mt-2 text-[clamp(40px,8vw,64px)] leading-none">{t("gift.title")}</h1>
-        <p className="mt-4 font-mono text-[15px] uppercase tracking-[0.04em]">{unitTry ? fmt(unitTry) : "—"}</p>
-
-        <label className="mt-8 block">
-          <span className="label-xs">{t("gift.amount")}</span>
-          <select value={choice} onChange={(e) => { setChoice(e.target.value); setWarn(false); }} className="mt-2 h-[54px] w-full rounded-full border border-border bg-surface px-5 text-[15px]">
-            {GIFT_AMOUNTS.map((a) => <option key={a} value={a}>{fmt(a)}</option>)}
-            <option value="custom">{t("gift.custom")}</option>
-          </select>
-        </label>
-        {choice === "custom" && (
-          <label className="mt-4 block">
-            <span className="label-xs">{t("gift.customLabel", { sym: CURRENCY_SYMBOL[cur] })}</span>
-            <input inputMode="numeric" value={custom} onChange={(e) => { setCustom(e.target.value.replace(/[^\d.,]/g, "")); setWarn(false); }} className="mt-2 h-[54px] w-full rounded-full border border-border bg-surface px-5 text-[15px]" placeholder={CURRENCY_SYMBOL[cur]} />
-          </label>
-        )}
-
-        <div className="mt-6">
-          <span className="label-xs">{t("gift.qty")}</span>
-          <div className="mt-2 inline-flex h-[54px] items-center rounded-full border border-border">
-            <button type="button" className="h-full w-14 text-lg" aria-label={t("gift.dec")} onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
-            <span className="w-10 text-center font-mono">{qty}</span>
-            <button type="button" className="h-full w-14 text-lg" aria-label={t("gift.inc")} onClick={() => setQty((q) => Math.min(20, q + 1))}>+</button>
+        <h1 className="mt-2 text-4xl leading-none md:text-6xl">{t("gift.title")}</h1>
+        {!unpriced && unitTry !== null && <p className="mt-4 font-mono text-[15px]">{fmt(unitTry)}</p>}
+        <fieldset className="mt-8 min-w-0">
+          <legend className="label-xs">{t("gift.amount")}</legend>
+          <div role="radiogroup" aria-label={t("gift.amount")} className="mt-2 space-y-2">
+            {GIFT_UNPRICED.map(value => <Option key={value} selected={choice === value} onSelect={() => { setChoice(value); setWarn(false); }} label={t(`gift.${value}`)} />)}
           </div>
+          <label className="mt-4 block">
+            <span className="sr-only">{t("gift.customLabel", { sym: CURRENCY_SYMBOL[cur] })}</span>
+            <select aria-label={t("gift.amount")} value={unpriced ? "" : choice} onChange={event => { if (event.target.value) setChoice(event.target.value); setWarn(false); }} className="mt-2 h-[54px] w-full rounded-full border border-border bg-surface px-5 text-[15px]">
+              <option value="" disabled>{t("gift.amount")}</option>
+              {GIFT_AMOUNTS.map(amount => <option key={amount} value={amount}>{fmt(amount)}</option>)}
+              <option value="custom">{t("gift.custom")}</option>
+            </select>
+          </label>
+        </fieldset>
+        {choice === "custom" && <label className="mt-4 block"><span className="label-xs">{t("gift.customLabel", { sym: CURRENCY_SYMBOL[cur] })}</span><input aria-label={t("gift.customLabel", { sym: CURRENCY_SYMBOL[cur] })} inputMode="decimal" value={custom} onChange={event => { setCustom(event.target.value.replace(/[^\d.,]/g, "")); setWarn(false); }} className="mt-2 h-[54px] w-full rounded-full border border-border bg-surface px-5 text-[15px]" placeholder={CURRENCY_SYMBOL[cur]} /></label>}
+        <p className="helper mt-4">{t("gift.validity")}</p>
+        <div className="mt-6"><p className="label-xs mb-2">{t("gift.qty")}</p><Stepper value={qty} onChange={setQty} max={20} label={t("gift.qty")} /></div>
+        <fieldset className="mt-6 min-w-0">
+          <legend className="label-xs">{t("gift.delivery")}</legend>
+          <div role="radiogroup" aria-label={t("gift.delivery")} className="mt-3 space-y-2">
+            <Option selected={delivery === "digital"} onSelect={() => setDelivery("digital")} label={t("gift.digital")} />
+            <Option selected={delivery === "printed"} onSelect={() => setDelivery("printed")} label={t("gift.printed", { shipping: shippingText(printedFee) })} note={t("gift.addressNote")} />
+          </div>
+        </fieldset>
+        <div className="mt-6 border-y border-border py-4">
+          <div className="flex justify-between gap-3 text-sm"><span>{t("gift.shipping")}</span><span>{shipping === 0 ? t("gift.freeShipping") : fmt(shipping)}</span></div>
+          <div className="mt-3 flex flex-wrap justify-between gap-3 font-mono"><span>{t("gift.total")}</span><span role="status">{totalText}</span></div>
         </div>
-
-        {qty > 1 && unitTry && <p className="mt-4 font-mono text-[13px] uppercase">{t("gift.total")}: {fmt(unitTry * qty)}</p>}
-        {cur !== "TRY" && unitTry && <p className="mt-2 text-[12px] text-helper">{t("price.approx")}</p>}
-
-        <a href="#" target="_blank" rel="noreferrer" onClick={send} className="btn mt-8 w-full bg-primary text-primary-foreground">
-          <WhatsAppIcon /> {t("cta.create")}
-        </a>
-        {warn && <p className="mt-3 text-sm text-destructive">{t("gift.needAmount")}</p>}
-
+        {cur !== "TRY" && total !== null && <p className="helper mt-2">{t("price.approx")}</p>}
+        <Button asChild className="mt-8 h-auto min-h-12 w-full rounded-full py-3"><a href="#" target="_blank" rel="noreferrer" onClick={send}><WhatsAppIcon />{t("cta.create")}</a></Button>
+        {warn && <p role="alert" className="mt-3 text-sm text-destructive">{t("gift.needAmount")}</p>}
         <p className="mt-8 leading-normal text-helper">{t("gift.desc")}</p>
       </div>
     </main>

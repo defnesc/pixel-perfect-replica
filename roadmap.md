@@ -18,3 +18,9 @@
 - [x] Clear cart after WhatsApp opens and show order-time/current price levels.
 - [x] Add sheet-priced instant estimator, cart estimates and bilingual messages/check links.
 - [x] Verify pricing tests and end-to-end flows (65 tests; mobile/desktop estimator, linked removal, order send and check read-back).
+
+# Custom cart and gift cards
+- [x] Make estimator cart-only with a green action and cart toast link.
+- [x] Add reference-photo messaging and first next step for custom orders only.
+- [x] Add gift amount types, delivery, sheet-controlled shipping, validity FAQ and purchase date.
+- [x] Verify concrete pricing rules and gift/custom order flows (70 tests; mobile gift shipping/unknown amounts and estimator-to-cart order/check flow, desktop English gift page; CRM payloads verified without private log read-back).

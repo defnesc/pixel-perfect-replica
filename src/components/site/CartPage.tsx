@@ -17,6 +17,7 @@ import {
 } from "@/lib/cart-pricing";
 import { newOrderId, sendToCrm, track, waLink } from "@/lib/order";
 import { formatForMessage } from "@/lib/currency";
+import { needsReference } from "@/lib/custom-order";
 import { CartLines, lineDescription, cartLineName } from "./CartLines";
 import { Option, Question } from "./Option";
 import { WhatsAppIcon } from "./WhatsAppIcon";
@@ -64,6 +65,7 @@ export function CartPage() {
     track("create_order_click", { order_id: next.id });
   };
   const orderPrices = order ? priceCart(order.items, products, optionGroups, order.factor, estimator) : priced;
+  const referenceRequired = order ? needsReference(order.items, products) : false;
   const checkUrl = order
     ? `${typeof window !== "undefined" ? window.location.origin : ""}/check?o=${encodeOrder(order)}`
     : "";
@@ -75,6 +77,7 @@ export function CartPage() {
           (l) =>
             `${l.item.kind === "estimate" ? l.item.quantity : l.item.quantity * l.item.teeth}× ${cartLineName(l.item, l.product, lang)}${l.item.addonOf ? ` [${t("addon.label")}]` : ""} (${lineDescription(l.item, optionGroups, lang)})${l.product?.per_tooth || l.item.kind === "estimate" ? ` – ${t(l.product?.placement === "gap" ? "cart.gaps" : "cart.teeth", { n: l.item.teeth * l.item.quantity })}` : ""}${l.savings > 0 ? ` (−%${l.product?.extra_piece_discount})` : ""}${l.product?.section === "custom" || l.item.kind === "estimate" ? ` [${t("cart.estimate")}]` : ""} – ${formatForMessage(l.total, cur, lang, rates)}`,
         ),
+        ...(referenceRequired ? [t("msg.reference")] : []),
         `${t("order.scan")}: ${t(`order.scan.${order.answers.scan}`)}`,
         `${t("order.delivery")}: ${t(`order.delivery.${order.answers.delivery}`)}`,
         `${t("order.payment")}: ${t("order.cashAdvance")}`,
@@ -108,6 +111,7 @@ export function CartPage() {
   };
   const steps = order
     ? [
+        ...(referenceRequired ? ["reference"] : []),
         ...(order.answers.scan === "istanbul"
           ? ["clinicBook", "clinicScan"]
           : order.answers.scan === "city"
