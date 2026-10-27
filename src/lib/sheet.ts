@@ -4,12 +4,14 @@ import { parseCsv, parseNumber } from "./csv";
 import { PRODUCTS, OPTION_GROUPS, ADDONS, parseProducts, parseOptions, parseAddons, type CatalogProduct, type OptionGroup, type Addon } from "./catalog";
 import settingsCsv from "@/data/settings.csv?raw";
 import estimatorCsv from "@/data/custom_estimator.csv?raw";
+import occasionsCsv from "@/data/occasions.csv?raw";
+import { parseCalendarSettings, parseOccasions, type CalendarSettings, type Occasion } from "./calendar";
 export { parseCsv } from "./csv";
 
 export interface FaqRow { question_en: string; question_tr: string; answer_en: string; answer_tr: string; sort_order: number }
 export interface Settings { whatsapp_number: string; scan_email: string; currency_symbol: string; usd_try: number; eur_try: number; auto_rates: boolean; foreign_round_up_to: number; price_base_usd_try: number; auto_price_adjust: boolean; price_step_percent: number; gift_card_shipping_tl: number; gift_card_free_shipping_from: number }
 export interface EstimatorRow { group: string; option: string; option_tr: string; price_add_tl: number; note: string }
-export interface SheetData { faq: FaqRow[]; settings: Settings; products: CatalogProduct[]; optionGroups: OptionGroup[]; addons: Addon[]; estimator: EstimatorRow[] }
+export interface SheetData { faq: FaqRow[]; settings: Settings; products: CatalogProduct[]; optionGroups: OptionGroup[]; addons: Addon[]; estimator: EstimatorRow[]; calendar: CalendarSettings; occasions: Occasion[] }
 export const SHEET_ID = "13aChzrGNnNUg2qpmoz6qEQJjQpfcbz9VblsaRyRIkjI";
 type Row = Record<string, string>;
 
@@ -30,7 +32,11 @@ export function parseSettings(row: Row, backup = SEED.settings): Settings {
   };
 }
 const parseEstimator = (rows: Row[]): EstimatorRow[] => rows.map(r => ({ group: r["group"] ?? "", option: r["option"] ?? "", option_tr: r["option_tr"] ?? "", price_add_tl: parseNumber(r["price_add_tl"]) ?? 0, note: r["note"] ?? "" }));
-export const BUILTIN: SheetData = { products: PRODUCTS, optionGroups: OPTION_GROUPS, addons: ADDONS, estimator: parseEstimator(parseCsv(estimatorCsv)), settings: parseSettings(parseCsv(settingsCsv)[0] ?? {}), faq: SEED.faq };
+export const BUILTIN: SheetData = { products: PRODUCTS, optionGroups: OPTION_GROUPS, addons: ADDONS, estimator: parseEstimator(parseCsv(estimatorCsv)), settings: parseSettings(parseCsv(settingsCsv)[0] ?? {}), faq: SEED.faq, ...calendarFrom(parseCsv(settingsCsv)[0] ?? {}, parseCsv(occasionsCsv)) };
+function calendarFrom(settingsRow: Row, occasionRows: Row[]) {
+  const calendar = parseCalendarSettings(settingsRow);
+  return { calendar, occasions: parseOccasions(occasionRows, calendar) };
+}
 
 /** Restore invalid rows by identity; valid omissions in the sheet remain omissions. */
 export function safeRows(rows: Row[], backup: Row[], identity: (r: Row) => string, valid: (r: Row) => boolean, tabName: string): Row[] {
@@ -61,8 +67,9 @@ async function tab(name: string): Promise<Row[]> {
   }
 }
 export async function loadSheet(): Promise<SheetData> {
-  const [products = [], options = [], addons = [], settings = [], estimator = [], faq = []] = await Promise.all(["Products", "Options", "Addons", "Settings", "Custom_Estimator", "FAQ"].map(tab));
+  const [products = [], options = [], addons = [], settings = [], estimator = [], faq = [], occasions = []] = await Promise.all(["Products", "Options", "Addons", "Settings", "Custom_Estimator", "FAQ", "Occasions"].map(tab));
   return {
+    ...calendarFrom(settings[0] ?? parseCsv(settingsCsv)[0] ?? {}, occasions.length ? occasions : parseCsv(occasionsCsv)),
     products: parseProducts(safeRows(products, productBackup, r => r["folder"] ?? "", r => Boolean(r["folder"] && r["name"]) && validNumber(r, "price", 1000) && (!r["compare_at_price"] || validNumber(r, "compare_at_price", 1000)), "Products")),
     optionGroups: parseOptions(safeRows(options, optionBackup, r => `${r["group_id"]}/${r["option"]}`, r => Boolean(r["group_id"] && r["option"]) && validNumber(r, "price_add_tl", 0), "Options")),
     addons: parseAddons(safeRows(addons, addonBackup, r => r["addon_id"] ?? "", r => Boolean(r["addon_id"] && r["product"]) && validNumber(r, "normal_price_tl", 1000) && validNumber(r, "addon_price_tl", 1000), "Addons")),
