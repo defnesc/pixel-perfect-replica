@@ -115,7 +115,7 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
   const t = useT();
   const navigate = useNavigate();
   const cart = useCart();
-  const { fmt, factor, products, optionGroups, addons, adjusted, cur, settings } = usePrices();
+  const { fmt, factor, products, optionGroups, addons, adjusted, cur } = usePrices();
   const [colour, setColour] = useState<"White" | "Yellow">("White");
   const [choices, setChoices] = useState<Record<string, string>>({});
   const [teeth, setTeeth] = useState(1);
