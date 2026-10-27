@@ -33,7 +33,8 @@ describe("gift card pricing rules", () => {
     expect(giftTotals(5000, 1, "printed", parseSettings({gift_card_shipping_tl:"200",gift_card_free_shipping_from:"12000"})).total).toBe(5200);
   });
   it("does not apply the dollar factor to card values or shipping", () => {
-    expect(giftTotals(5000, 1, "printed", { ...settings, auto_price_adjust: true, price_step_percent: 30 })).toEqual({ subtotal: 5000, shipping: 150, total: 5150 });
+    const adjustedSettings = { ...settings, auto_price_adjust: true, price_step_percent: 30 };
+    expect(giftTotals(5000, 1, "printed", adjustedSettings)).toEqual({ subtotal: 5000, shipping: 150, total: 5150 });
   });
   it("dates the purchase in Istanbul and uses the requested day.month.year format", () => {
     expect(giftPurchaseDate(new Date("2026-10-27T19:39:00Z"))).toBe("27.10.2026");
