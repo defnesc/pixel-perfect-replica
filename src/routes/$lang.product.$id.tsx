@@ -13,7 +13,6 @@ import { addonLine, configuredLine, priceCart } from "@/lib/cart-pricing";
 import { Stepper } from "@/components/site/Stepper";
 import { usePrices } from "@/lib/use-prices";
 import { OrderCalendar } from "@/components/site/OrderCalendar";
-import { waLink } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
 import { Faq } from "@/components/site/Faq";
 import { WhatsAppIcon } from "@/components/site/WhatsAppIcon";
@@ -116,7 +115,7 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
   const t = useT();
   const navigate = useNavigate();
   const cart = useCart();
-  const { fmt, factor, products, optionGroups, addons, adjusted, cur, settings } = usePrices();
+  const { fmt, factor, products, optionGroups, addons, adjusted, cur } = usePrices();
   const [colour, setColour] = useState<"White" | "Yellow">("White");
   const [choices, setChoices] = useState<Record<string, string>>({});
   const [teeth, setTeeth] = useState(1);
@@ -207,19 +206,11 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
             <Stepper
               value={teeth}
               onChange={setTeeth}
-              max={8}
+              max={16}
               label={t(
                 product.placement === "gap" ? "product.howManyGaps" : "product.howManyTeeth",
               )}
             />
-            <a
-              className="helper mt-3 block underline"
-              target="_blank"
-              rel="noreferrer"
-              href={waLink(settings.whatsapp_number, t("msg.moreTeeth", { name }))}
-            >
-              {t("product.moreTeeth")}
-            </a>
           </Question>
         )}
         {groups
