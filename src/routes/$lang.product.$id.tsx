@@ -207,19 +207,11 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
             <Stepper
               value={teeth}
               onChange={setTeeth}
-              max={8}
+              max={16}
               label={t(
                 product.placement === "gap" ? "product.howManyGaps" : "product.howManyTeeth",
               )}
             />
-            <a
-              className="helper mt-3 block underline"
-              target="_blank"
-              rel="noreferrer"
-              href={waLink(settings.whatsapp_number, t("msg.moreTeeth", { name }))}
-            >
-              {t("product.moreTeeth")}
-            </a>
           </Question>
         )}
         {groups
