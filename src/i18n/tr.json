@@ -183,5 +183,13 @@
   "gift.date": "Tarih",
   "gift.goCart": "Sepete git",
   "msg.reference": "Referans fotoğrafımı / fikrimi bu mesajın hemen ardından gönderiyorum.",
-  "roadmap.reference": "Referans fotoğrafını veya fikrini WhatsApp'tan gönder – kesin fiyatı üretimden önce birlikte belirliyoruz."
+  "roadmap.reference": "Referans fotoğrafını veya fikrini WhatsApp'tan gönder – kesin fiyatı üretimden önce birlikte belirliyoruz.",
+  "cal.batch": "Bu haftanın üretim partisinde {n} yer kaldı – {date} gününe kadar sipariş ver.",
+  "cal.batchOne": "Bu haftanın üretim partisinde {n} yer kaldı – {date} gününe kadar sipariş ver.",
+  "cal.batchFull": "Bu haftanın partisi doldu – sıradaki parti {date} kapanıyor.",
+  "cal.delivery": "Tahmini teslim: {range}",
+  "cal.deliveryNote": "(tarama tarihine göre değişebilir)",
+  "cal.deliveryCatalog": "(katalog parçaları için)",
+  "cal.occasion": "{name} yetişmesi için son sipariş: {date}",
+  "cal.occasionPlain": "{name} için son sipariş: {date}"
 }

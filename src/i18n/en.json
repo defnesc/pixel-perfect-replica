@@ -183,5 +183,13 @@
   "gift.date": "Date",
   "gift.goCart": "Go to cart",
   "msg.reference": "I’ll send my reference photo / idea right after this message.",
-  "roadmap.reference": "Send us your reference photo or idea on WhatsApp – we confirm the final price together before production."
+  "roadmap.reference": "Send us your reference photo or idea on WhatsApp – we confirm the final price together before production.",
+  "cal.batch": "{n} spots left in this week's production batch – order by {date}.",
+  "cal.batchOne": "{n} spot left in this week's production batch – order by {date}.",
+  "cal.batchFull": "This week's batch is full – the next one closes on {date}.",
+  "cal.delivery": "Estimated delivery: {range}",
+  "cal.deliveryNote": "(depends on your scan date)",
+  "cal.deliveryCatalog": "(for catalog pieces)",
+  "cal.occasion": "Last order for {name}: {date}",
+  "cal.occasionPlain": "Last order for {name}: {date}"
 }
