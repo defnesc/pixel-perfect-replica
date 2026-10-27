@@ -30,7 +30,7 @@ export function useCalendarLines(delivery: "show" | "hide" | "catalog" = "show")
     ? t(v.batch.spots === 1 ? "cal.batchOne" : "cal.batch", { n: b(v.batch.spots), date: b(formatWeekdayDate(v.batch.cutoff, lang)) })
     : t("cal.batchFull", { date: b(formatWeekdayDate(v.batch.cutoff, lang)) }) });
   const range = v.delivery ? formatRange(v.delivery.from, v.delivery.to, lang) : "";
-  if (v.delivery && delivery !== "hide") lines.push({ icon: "🚚", text: `${t("cal.delivery", { range: b(range) })} *${t(delivery === "catalog" ? "cal.deliveryCatalog" : "cal.deliveryNote")}*` });
+  if (v.delivery && delivery !== "hide") lines.push({ icon: "🚚", text: `${t("cal.delivery", { range: b(range) })} __${t(delivery === "catalog" ? "cal.deliveryCatalog" : "cal.deliveryNote")}__` });
   if (v.occasion) {
     const o = v.occasion.occasion, date = b(formatDate(v.occasion.last, lang));
     lines.push({ icon: "🎁", text: lang === "tr"
@@ -49,7 +49,7 @@ export function OrderCalendar({ only, delivery = "show", className = "" }: { onl
       {shown.map(l => (
         <p key={l.icon} className="flex gap-2 py-0.5 [overflow-wrap:anywhere]">
           <span aria-hidden>{l.icon}</span>
-          <span>{l.text.split(/\*(?!\*)([^*]+)\*(?!\*)/).map((part, i) => (i % 2 ? <em key={i} className="text-helper">{part}</em> : <Rich key={i} text={part} />))}</span>
+          <span>{l.text.split("__").map((part, i) => (i % 2 ? <em key={i} className="text-helper">{part}</em> : <Rich key={i} text={part} />))}</span>
         </p>
       ))}
     </div>

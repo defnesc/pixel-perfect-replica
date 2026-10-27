@@ -69,7 +69,7 @@ async function tab(name: string): Promise<Row[]> {
 export async function loadSheet(): Promise<SheetData> {
   const [products = [], options = [], addons = [], settings = [], estimator = [], faq = [], occasions = []] = await Promise.all(["Products", "Options", "Addons", "Settings", "Custom_Estimator", "FAQ", "Occasions"].map(tab));
   return {
-    ...calendarFrom(settings[0] ?? parseCsv(settingsCsv)[0] ?? {}, occasions.length ? occasions : parseCsv(occasionsCsv)),
+    ...calendarFrom(settings[0] ?? parseCsv(settingsCsv)[0] ?? {}, occasions.length && "name_en" in occasions[0]! ? occasions : parseCsv(occasionsCsv)),
     products: parseProducts(safeRows(products, productBackup, r => r["folder"] ?? "", r => Boolean(r["folder"] && r["name"]) && validNumber(r, "price", 1000) && (!r["compare_at_price"] || validNumber(r, "compare_at_price", 1000)), "Products")),
     optionGroups: parseOptions(safeRows(options, optionBackup, r => `${r["group_id"]}/${r["option"]}`, r => Boolean(r["group_id"] && r["option"]) && validNumber(r, "price_add_tl", 0), "Options")),
     addons: parseAddons(safeRows(addons, addonBackup, r => r["addon_id"] ?? "", r => Boolean(r["addon_id"] && r["product"]) && validNumber(r, "normal_price_tl", 1000) && validNumber(r, "addon_price_tl", 1000), "Addons")),
