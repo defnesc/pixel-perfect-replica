@@ -21,6 +21,7 @@ import { needsReference } from "@/lib/custom-order";
 import { CartLines, lineDescription, cartLineName } from "./CartLines";
 import { Option, Question } from "./Option";
 import { WhatsAppIcon } from "./WhatsAppIcon";
+import { OrderCalendar, useCalendarLines } from "./OrderCalendar";
 export function CartPage() {
   const t = useT(),
     lang = useLang();
@@ -65,6 +66,11 @@ export function CartPage() {
     track("create_order_click", { order_id: next.id });
   };
   const orderPrices = order ? priceCart(order.items, products, optionGroups, order.factor, estimator) : priced;
+  const calLines = orderPrices.lines;
+  const hasCatalog = calLines.some((l) => l.item.kind !== "estimate" && l.product?.section === "classics");
+  const hasCustom = calLines.some((l) => l.item.kind === "estimate" || l.product?.section === "custom");
+  const deliveryMode = !hasCatalog ? "hide" : hasCustom ? "catalog" : "show";
+  const { deliveryText } = useCalendarLines(deliveryMode);
   const referenceRequired = order ? needsReference(order.items, products) : false;
   const checkUrl = order
     ? `${typeof window !== "undefined" ? window.location.origin : ""}/check?o=${encodeOrder(order)}`
@@ -81,6 +87,7 @@ export function CartPage() {
         `${t("order.scan")}: ${t(`order.scan.${order.answers.scan}`)}`,
         `${t("order.delivery")}: ${t(`order.delivery.${order.answers.delivery}`)}`,
         `${t("order.payment")}: ${t("order.cashAdvance")}`,
+        ...(deliveryText ? [t("cal.delivery", { range: deliveryText }) + (deliveryMode === "catalog" ? ` ${t("cal.deliveryCatalog")}` : "")] : []),
         `${t("msg.total")}: ${formatForMessage(orderPrices.total, cur, lang, rates)}`,
         ...(orderPrices.estimated
           ? [`${t("cart.estimated")}: ${formatForMessage(orderPrices.estimated, cur, lang, rates)}`]
@@ -104,6 +111,7 @@ export function CartPage() {
       price_factor: order.factor,
       usd_try: rates.usd_try,
       currency: cur,
+      estimated_delivery: deliveryText,
       check_link: checkUrl,
       status: "1 – Order created on website",
     });
@@ -324,6 +332,7 @@ export function CartPage() {
                     </li>
                   ))}
                 </ol>
+                <OrderCalendar delivery={deliveryMode} className="mb-4" />
                 <Button
                   asChild
                   className="h-auto min-h-12 w-full whitespace-normal rounded-full bg-success py-3 text-success-foreground hover:bg-success/90"

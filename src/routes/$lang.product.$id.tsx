@@ -12,6 +12,7 @@ import { linkedAddon, matchingMain } from "@/lib/cart-actions";
 import { addonLine, configuredLine, priceCart } from "@/lib/cart-pricing";
 import { Stepper } from "@/components/site/Stepper";
 import { usePrices } from "@/lib/use-prices";
+import { OrderCalendar } from "@/components/site/OrderCalendar";
 import { waLink } from "@/lib/order";
 import { Option, Question } from "@/components/site/Option";
 import { Faq } from "@/components/site/Faq";
@@ -339,6 +340,7 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
             <span>{fmt(total)}</span>
           </div>
           {cur !== "TRY" && <p className="helper mt-2">{t("price.approx")}</p>}
+          {product.section === "classics" && <OrderCalendar className="mt-4" />}
           <Button
             variant="outline"
             className="mt-4 h-auto min-h-12 w-full whitespace-normal rounded-full py-3"
