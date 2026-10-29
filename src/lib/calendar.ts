@@ -4,7 +4,6 @@ import { parseNumber } from "./csv";
 export interface CalendarSettings { spots: number | null; cutoffWeekday: number; minDays: number; maxDays: number; showDays: number }
 export interface Occasion { name_tr: string; phrase_tr: string; name_en: string; date: number; last: number }
 export interface CalendarView {
-  batch?: { spots: number; cutoff: number };
   delivery?: { from: number; to: number };
   occasion?: { occasion: Occasion; last: number };
 }
@@ -71,7 +70,6 @@ export function orderCalendar(today: number, s: CalendarSettings, occasions: Occ
   const full = s.spots === 0;
   const base = full ? thisWeek + 7 : thisWeek;
   const view: CalendarView = {};
-  if (s.spots !== null) view.batch = { spots: s.spots, cutoff: base };
   if (s.minDays <= s.maxDays) view.delivery = { from: base + s.minDays, to: base + s.maxDays };
   const earliest = full ? base - 6 : today;
   const o = occasions.find(x => x.last >= earliest && x.last >= today && x.last - today <= s.showDays);

@@ -19,7 +19,7 @@ describe("order calendar", () => {
   });
   it("moves to next week when no spots are left", () => {
     const v = orderCalendar(d("2026-11-02"), { ...s, spots: 0 }, []);
-    expect(v.batch?.cutoff).toBe(d("2026-11-10"));
+    expect(v).not.toHaveProperty("batch");
     expect(v.delivery).toEqual({ from: d("2026-11-24"), to: d("2026-12-01") });
   });
   it("formats delivery ranges within and across months", () => {

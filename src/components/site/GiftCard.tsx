@@ -24,7 +24,7 @@ export function GiftCardPage() {
   const customNum = Number(custom.replace(",", "."));
   const unitTry = unpriced ? null : choice === "custom" ? (Number.isFinite(customNum) && customNum > 0 ? convertToTry(customNum, cur, rates) : null) : Number(choice);
   const { shipping, total } = giftTotals(unitTry, qty, delivery, settings);
-  const shippingText = (value: number) => value === 0 ? t("gift.freeShipping") : t("gift.shippingFee", { price: formatTl(value) });
+  const shippingText = (value: number) => value === 0 ? t("gift.freeShipping") : t("gift.shippingFee", { price: fmt(value) });
   const printedFee = giftTotals(unitTry, qty, "printed", settings).shipping;
   const totalText = total === null ? t("gift.decided") : fmt(total);
 

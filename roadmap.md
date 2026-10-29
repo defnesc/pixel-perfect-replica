@@ -28,3 +28,6 @@
 # Order calendar
 - [x] Sheet-driven batch, delivery and special-day box on Classics product pages, cart and Classics list (tests in calendar.test.ts).
 - [ ] Add the five new Settings keys and the Occasions tab to the live Google Sheet (owner action; site uses backups until then).
+
+# Fixes (prompt 9)
+- [x] Remove batch line, currency-aware per-tooth/shipping notes, add-ons selected before Add to cart, engraved backups 7490 (91 tests; mobile check).

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingBag } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
-import { linkedAddon, matchingMain } from "@/lib/cart-actions";
+import { configurationLines } from "@/lib/cart-actions";
 import { addonLine, configuredLine, priceCart } from "@/lib/cart-pricing";
 import { Stepper } from "@/components/site/Stepper";
 import { usePrices } from "@/lib/use-prices";
@@ -119,17 +119,32 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
   const [colour, setColour] = useState<"White" | "Yellow">("White");
   const [choices, setChoices] = useState<Record<string, string>>({});
   const [teeth, setTeeth] = useState(1);
+  const [picked, setPicked] = useState<Record<string, number>>({});
   const groups = optionGroups.filter((g) => product.option_groups.includes(g.group_id));
   const item = configuredLine(product, optionGroups, colour, choices, teeth);
+  const selected = product.section === "classics"
+    ? addons.flatMap((a) => {
+        const l = picked[a.addon_id] ? addonLine(a, products, optionGroups, colour) : null;
+        return l ? [{ ...l, quantity: picked[a.addon_id] ?? 0 }] : [];
+      })
+    : [];
+  const sum = (lines: typeof cart.items) => {
+    const r = priceCart(lines, products, optionGroups, factor);
+    return r.total + r.estimated;
+  };
+  const before = sum(cart.items);
   const priced = priceCart([item], products, optionGroups, factor);
-  const total = priced.total + priced.estimated;
+  const unitTotal = priced.total + priced.estimated;
+  const total = sum([...cart.items, item, ...selected]) - before;
   const name = lang === "tr" ? product.name_tr : product.name;
   const badge = lang === "tr" ? product.badge_tr : product.badge;
   const add = (open = false) => {
-    cart.add(item);
+    const extra = selected.reduce((n, l) => n + l.quantity, 0);
+    cart.addMany(configurationLines(item, selected, () => crypto.randomUUID()));
+    setPicked({});
     if (open) navigate({ to: "/$lang/cart", params: { lang } });
     else
-      toast.success(t("cart.added"), {
+      toast.success(extra ? t(extra === 1 ? "addon.withAddedOne" : "addon.withAdded", { main: name, n: extra }) : t("cart.added"), {
         action: {
           label: t("cart.view"),
           onClick: () => navigate({ to: "/$lang/cart", params: { lang } }),
@@ -170,7 +185,7 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
         </p>
         {product.per_tooth && (
           <p className="helper mt-2">
-            {t("product.perTooth", { x: fmt(Math.round(total / teeth)) })}
+            {t("product.perTooth", { x: fmt(Math.round(unitTotal / teeth)) })}
           </p>
         )}
         {product.folder === "classic-cap-and-frame-duo" && product.compare_at_price && (
@@ -278,14 +293,12 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
                 .map((a) => {
                   const line = addonLine(a, products, optionGroups, colour);
                   if (!line) return null;
-                  const parent = matchingMain(cart.items, item);
-                  const existing = linkedAddon(cart.items, item, line);
-                  const combined = priceCart([...cart.items, ...(!parent ? [item] : []), line], products, optionGroups, factor);
+                  const count = picked[a.addon_id] ?? 0;
+                  const existing = count > 0 ? { quantity: count } : undefined;
+                  const others = selected.filter((l) => l.product !== line.product);
+                  const combined = priceCart([...cart.items, item, ...others, line], products, optionGroups, factor);
                   const addonName = lang === "tr" ? a.name_tr : a.name;
-                  const change = (n: number) => {
-                    cart.addon(item, line, n);
-                    if (n > 0 && !existing) toast.success(parent ? t("cart.added") : t("addon.bothAdded", { main: name, addon: addonName }));
-                  };
+                  const change = (n: number) => setPicked((v) => ({ ...v, [a.addon_id]: Math.max(0, Math.min(10, n)) }));
                   const charge = combined.lines[combined.lines.length - 1];
                   const img = photoUrl(`${a.photo_folder}-01.jpg`);
                   return (
