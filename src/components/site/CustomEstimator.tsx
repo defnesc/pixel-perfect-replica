@@ -5,7 +5,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useLang, useT } from "@/i18n";
 import { Button } from "@/components/ui/button";
 import { usePrices } from "@/lib/use-prices";
-import { estimateCustom, formatTl, isPerTooth, photoUrl } from "@/lib/catalog";
+import { estimateCustom, isPerTooth, photoUrl } from "@/lib/catalog";
 import { useCart } from "@/lib/cart";
 import type { CartLine } from "@/lib/cart-pricing";
 import { Question } from "./Option";

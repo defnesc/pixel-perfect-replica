@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { useLang, useT } from "@/i18n";
 import { sheetQuery } from "@/lib/sheet";
-import { formatDate, formatRange, formatWeekdayDate, istanbulDay, orderCalendar } from "@/lib/calendar";
+import { formatDate, formatRange, istanbulDay, orderCalendar } from "@/lib/calendar";
 
 /** Renders "**x**" segments as pink key words. */
 function Rich({ text }: { text: string }) {
