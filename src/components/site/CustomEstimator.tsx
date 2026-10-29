@@ -36,7 +36,7 @@ export function CustomEstimator() {
             return <Button key={row.option} variant="outline" aria-pressed={choices[group] === row.option} onClick={() => setChoices((v) => ({ ...v, [group]: row.option }))} className={`h-auto min-h-12 flex-col overflow-hidden whitespace-normal p-2 ${group === "style" || src ? "rounded-lg" : ""} ${choices[group] === row.option ? "border-primary bg-primary/10" : ""}`}>
               <span>{group === "engraving" ? t(`estimator.option.${row.option}`) : lang === "tr" ? row.option_tr : row.option}</span>
               {src && <img src={src} alt="" className="aspect-square w-full rounded object-cover" />}
-              {isPerTooth(row.note) && row.price_add_tl > 0 && <span className="text-xs text-helper">{t("product.perTooth", { x: `+${formatTl(row.price_add_tl)}` })}</span>}
+              {isPerTooth(row.note) && row.price_add_tl > 0 && <span className="text-xs text-helper">{t("product.perTooth", { x: `+${fmt(row.price_add_tl * factor)}` })}</span>}
               {!isPerTooth(row.note) && row.price_add_tl < 0 && <span className="text-xs text-helper">{t("price.ask")}</span>}
             </Button>;
           })}

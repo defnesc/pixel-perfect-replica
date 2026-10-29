@@ -26,9 +26,6 @@ export function useCalendarLines(delivery: "show" | "hide" | "catalog" = "show")
   const v = orderCalendar(today, data.calendar, data.occasions);
   const b = (s: string | number) => `**${s}**`;
   const lines: { icon: string; text: string }[] = [];
-  if (v.batch) lines.push({ icon: "📦", text: v.batch.spots > 0
-    ? t(v.batch.spots === 1 ? "cal.batchOne" : "cal.batch", { n: b(v.batch.spots), date: b(formatWeekdayDate(v.batch.cutoff, lang)) })
-    : t("cal.batchFull", { date: b(formatWeekdayDate(v.batch.cutoff, lang)) }) });
   const range = v.delivery ? formatRange(v.delivery.from, v.delivery.to, lang) : "";
   if (v.delivery && delivery !== "hide") lines.push({ icon: "🚚", text: `${t("cal.delivery", { range: b(range) })} __${t(delivery === "catalog" ? "cal.deliveryCatalog" : "cal.deliveryNote")}__` });
   if (v.occasion) {
