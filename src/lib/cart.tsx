@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { cartSchema, type CartLine } from "./cart-pricing";
-import { removeWithAddons, setAddonQuantity } from "./cart-actions";
+import { removeWithAddons } from "./cart-actions";
 const KEY = "333-cart";
 type CartContextValue = {
   items: CartLine[];
@@ -8,7 +8,7 @@ type CartContextValue = {
   remove: (id: string) => void;
   quantity: (id: string, n: number) => void;
   ready: boolean;
-  addon: (main: CartLine, addon: CartLine, quantity: number) => void;
+  addMany: (lines: CartLine[]) => void;
   clear: () => void;
 };
 const CartContext = createContext<CartContextValue | null>(null);
@@ -41,7 +41,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         add,
         ready,
         remove: (id) => setItems((v) => removeWithAddons(v, id)),
-        addon: (main, addon, quantity) => setItems((v) => setAddonQuantity(v, main, addon, quantity, () => crypto.randomUUID())),
+        addMany: (lines) => setItems((v) => v.length + lines.length <= 100 && cartSchema.safeParse([...v, ...lines]).success ? [...v, ...lines] : v),
         clear: () => setItems([]),
         quantity: (id, n) => {
           if (Number.isInteger(n) && n >= 1 && n <= 10)
@@ -59,7 +59,7 @@ const EMPTY_CART: CartContextValue = {
   remove: () => {},
   quantity: () => {},
   ready: false,
-  addon: () => {},
+  addMany: () => {},
   clear: () => {},
 };
 /** Falls back to an empty cart (e.g. during hot reloads) instead of blanking the page. */

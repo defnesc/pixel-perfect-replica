@@ -139,7 +139,7 @@
   "seo.check.title": "Sipariş Kontrolü — 333 Grillz",
   "seo.check.desc": "333 Grillz siparişinizin fiyatlarını ve bilgilerini karşılaştırın.",
   "addon.label": "Ek parça",
-  "addon.bothAdded": "{main} + {addon} eklendi",
+  "addon.withAdded": "{main} + {n} ek parça eklendi",
   "addon.removeConfirm": "Bu, {n} ek parçasını da kaldırır. Devam edilsin mi?",
   "check.level": "Sipariş anındaki fiyat seviyesi: ×{saved} · bugün: ×{today}",
   "check.raised": "Bu siparişten sonra fiyatlar yükseldi – tarihi kontrol edin.",
