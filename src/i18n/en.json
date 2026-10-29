@@ -139,6 +139,7 @@
   "seo.check.title": "Order Check — 333 Grillz",
   "seo.check.desc": "Compare the prices and details of your 333 Grillz order.",
   "addon.label": "Add-on",
+  "addon.withAddedOne": "{main} + {n} add-on added",
   "addon.withAdded": "{main} + {n} add-ons added",
   "addon.removeConfirm": "This also removes its {n} add-ons. Continue?",
   "check.level": "Price level at order: ×{saved} · today: ×{today}",

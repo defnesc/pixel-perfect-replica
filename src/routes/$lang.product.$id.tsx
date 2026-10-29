@@ -144,7 +144,7 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
     setPicked({});
     if (open) navigate({ to: "/$lang/cart", params: { lang } });
     else
-      toast.success(extra ? t("addon.withAdded", { main: name, n: extra }) : t("cart.added"), {
+      toast.success(extra ? t(extra === 1 ? "addon.withAddedOne" : "addon.withAdded", { main: name, n: extra }) : t("cart.added"), {
         action: {
           label: t("cart.view"),
           onClick: () => navigate({ to: "/$lang/cart", params: { lang } }),

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { PRODUCTS, OPTION_GROUPS, estimateCustom } from "./catalog";
 import { BUILTIN } from "./sheet";
 import { cartSchema, configuredLine, encodeOrder, decodeOrder, priceCart, raisedSinceOrder, type CartLine, type OrderRecord } from "./cart-pricing";
-import { linkedAddon, matchingMain, removeWithAddons, setAddonQuantity } from "./cart-actions";
+import { configurationLines, linkedAddon, matchingMain, removeWithAddons, setAddonQuantity } from "./cart-actions";
 function line(folder: string) {
   const p = PRODUCTS.find((p) => p.folder === folder);
   if (!p) throw new Error("Missing product");
@@ -76,4 +76,24 @@ describe("price level warning", () => {
   it("warns only for lower factor and more than three days", () => expect(raisedSinceOrder(date, 1, 1.03, start + 3 * 86400000 + 1)).toBe(true));
   it("does not warn at exactly three days", () => expect(raisedSinceOrder(date, 1, 1.03, start + 3 * 86400000)).toBe(false));
   it("does not warn when factors match", () => expect(raisedSinceOrder(date, 1.03, 1.03, start + 4 * 86400000)).toBe(false));
+});describe("add-ons chosen before Add to cart", () => {
+  const a1 = { ...line("frame"), quantity: 1 }, a2 = { ...line("classic-cap"), quantity: 1 };
+  it("2 selected add-ons + Add to cart gives 3 lines linked to the new main", () => {
+    const items = configurationLines(main, [a1, a2], id);
+    expect(items).toHaveLength(3);
+    expect(items[1]?.addonOf).toBe(items[0]?.id);
+    expect(items[2]?.addonOf).toBe(items[0]?.id);
+  });
+  it("adding twice makes two mains, each with its own add-ons, not duplicated", () => {
+    const first = configurationLines(main, [a1], id);
+    const items = [...first, ...configurationLines(main, [], id)];
+    expect(items.filter((l) => !l.addonOf)).toHaveLength(2);
+    expect(items.filter((l) => l.addonOf)).toHaveLength(1);
+  });
+  it("page total equals the cart total difference", () => {
+    const cart = configurationLines(addon, [], id);
+    const added = configurationLines(main, [a1, a2], id);
+    expect(calc([...cart, ...added]).total - calc(cart).total).toBe(calc([...cart, main, a1, a2]).total - calc(cart).total);
+    expect(calc([...cart, ...added]).total).toBeGreaterThan(calc(cart).total);
+  });
 });
