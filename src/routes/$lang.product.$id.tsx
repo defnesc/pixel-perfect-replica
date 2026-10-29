@@ -125,7 +125,7 @@ function ProductOrder({ lang, product }: { lang: Lang; product: CatalogProduct }
   const selected = product.section === "classics"
     ? addons.flatMap((a) => {
         const l = picked[a.addon_id] ? addonLine(a, products, optionGroups, colour) : null;
-        return l ? [{ ...l, quantity: picked[a.addon_id] }] : [];
+        return l ? [{ ...l, quantity: picked[a.addon_id] ?? 0 }] : [];
       })
     : [];
   const sum = (lines: typeof cart.items) => {
