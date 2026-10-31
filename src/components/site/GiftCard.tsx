@@ -56,7 +56,7 @@ export function GiftCardPage() {
       <div className="min-w-0 px-4 pt-6 md:px-0 md:pt-0">
         <p className="label-xs text-helper">333 GRILLZ</p>
         <h1 className="mt-2 text-4xl leading-none md:text-6xl">{t("gift.title")}</h1>
-        <p className="mt-4 leading-normal">{t("gift.intro")}</p>
+        <p className="mt-3 text-sm leading-relaxed text-helper">{t("gift.intro")}</p>
         {!unpriced && unitTry !== null && <p className="mt-4 font-mono text-[15px]">{fmt(unitTry)}</p>}
         <fieldset className="mt-8 min-w-0">
           <legend className="label-xs">{t("gift.amount")}</legend>
