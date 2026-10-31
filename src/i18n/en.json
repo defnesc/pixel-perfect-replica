@@ -187,5 +187,6 @@
   "cal.deliveryNote": "(depends on your scan date)",
   "cal.deliveryCatalog": "(for catalog pieces)",
   "cal.occasion": "Last order for {name}: {date}",
-  "cal.occasionPlain": "Last order for {name}: {date}"
+  "cal.occasionPlain": "Last order for {name}: {date}",
+  "gift.intro": "Gift grillz to someone you love! Choose a gift that makes their smile shine — pick an amount and we'll take care of the rest."
 }
