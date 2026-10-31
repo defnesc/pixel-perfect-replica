@@ -187,5 +187,6 @@
   "cal.deliveryNote": "(tarama tarihine göre değişebilir)",
   "cal.deliveryCatalog": "(katalog parçaları için)",
   "cal.occasion": "{name} yetişmesi için son sipariş: {date}",
-  "cal.occasionPlain": "{name} için son sipariş: {date}"
+  "cal.occasionPlain": "{name} için son sipariş: {date}",
+  "gift.intro": "Sevdiğinize grillz hediye edin! Ona özel tasarlanmış, gülüşünü parlatacak bir hediye seçin; tutarı belirleyin, gerisini biz halledelim."
 }
