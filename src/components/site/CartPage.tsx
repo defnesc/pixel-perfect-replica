@@ -93,7 +93,6 @@ export function CartPage() {
           ? [`${t("cart.estimated")}: ${formatForMessage(orderPrices.estimated, cur, lang, rates)}`]
           : []),
         ...(cur !== "TRY" ? [t("price.approx")] : []),
-        `${t("check.link")}: ${checkUrl}`,
       ].join("\n")
     : "";
   const send = () => {

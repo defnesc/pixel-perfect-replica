@@ -1,5 +1,8 @@
 import { translate, type Lang } from "@/i18n";
 
+/** Absolute URL so link previews (WhatsApp, Instagram) can load it. */
+export const SHARE_IMAGE = "https://333jewelry.com/share.jpg";
+
 /** Page meta + hreflang alternates. `path` is the part after /en or /tr (e.g. "/faq"). */
 export function seo(lang: Lang, key: string, path = "", trPath = path, vars?: Record<string, string>) {
   const title = translate(lang, `seo.${key}.title`, vars);
@@ -13,6 +16,9 @@ export function seo(lang: Lang, key: string, path = "", trPath = path, vars?: Re
       { property: "og:type", content: "website" },
       { property: "og:locale", content: lang === "tr" ? "tr_TR" : "en_US" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:image", content: SHARE_IMAGE },
+      { name: "twitter:image", content: SHARE_IMAGE },
+      { property: "og:site_name", content: "333 Grillz" },
     ],
     links: [
       { rel: "alternate", hrefLang: "en", href: `/en${path}` },

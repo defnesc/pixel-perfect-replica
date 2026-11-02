@@ -2,15 +2,17 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useT, type Lang } from "@/i18n";
 import { seo } from "@/lib/seo";
 import { CatalogBoxes } from "@/components/site/CatalogLanding";
-import introAsset from "@/assets/hero-grillz.jpg.asset.json";
 
 export const Route = createFileRoute("/$lang/")({
   head: ({ params }) => {
     const meta = seo(params.lang as Lang, "home");
-    return { ...meta, meta: [...meta.meta, { property: "og:image", content: introAsset.url }, { name: "twitter:image", content: introAsset.url }] };
+    return meta;
   },
   component: Catalog,
 });
+
+/** The hero photo lives in public/ so it is served by the site itself (not Lovable’s asset store). */
+const HERO = "/hero-grillz.jpg";
 
 function Catalog() {
   const t = useT();
@@ -18,12 +20,12 @@ function Catalog() {
 
   return (
     <main>
-      <section className="relative flex h-[min(calc(100svh-90px),max(100vw,62svh))] flex-col items-center justify-center overflow-hidden md:h-[calc(100svh-90px)]">
+      <section className="relative flex h-[min(calc(100svh-90px),max(100vw,76svh))] flex-col items-center justify-center overflow-hidden md:h-[calc(100svh-90px)]">
         <div className="photo-fade absolute inset-x-0 top-[13.5%] bottom-[5.5%] overflow-hidden">
-          <img src={introAsset.url} alt="" width={1536} height={1755} className="animate-intro absolute inset-0 h-full w-full object-cover opacity-90" />
+          <img src={HERO} alt="" width={1536} height={1755} className="animate-intro absolute inset-0 h-full w-full object-cover opacity-90" />
         </div>
         <div className="blur-veil pointer-events-none absolute inset-0 scale-[1.05] overflow-hidden">
-          <img src={introAsset.url} alt="" aria-hidden width={1536} height={1755} className="absolute inset-0 h-full w-full object-cover opacity-90 blur-[16px]" />
+          <img src={HERO} alt="" aria-hidden width={1536} height={1755} className="absolute inset-0 h-full w-full object-cover opacity-90 blur-[16px]" />
           <div className="veil-tint absolute inset-0" />
         </div>
         <div className="relative overflow-hidden px-4 text-center">
